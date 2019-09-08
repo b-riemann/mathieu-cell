@@ -39,7 +39,7 @@ if __name__ == '__main__':
 
         elif filename == "necktie.pdf":
             print("zoom-in of the necktie island in k0,k1 space")
-            fig, ax = subplots()
+            fig, ax = subplots(figsize=(4, 3.5))
             fks = FloquetKSpace(arange(-0.26, 0.27, 0.02), arange(0, 0.93, 0.02))
             fks.solveCxy()
             fks.plotStability(ax, tuneLevels=arange(.1, .45, .1))
