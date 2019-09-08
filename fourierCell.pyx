@@ -6,10 +6,10 @@ from numpy import absolute, amax, arange, array, cos, copy, empty, exp, eye, zer
 from scipy.linalg import det, svd
 from scipy.optimize import minimize
 from libc.math cimport sin, sinh, sqrt, pi, fabs, asin
-from twist.tools import absq
 from numpy.linalg import solve, LinAlgError
 from scipy.optimize import minimize
 from time import sleep
+from tools import absq
 
 I5I2tme = 2 * (pi/2) ** 3 / (3 * sqrt(15))
 

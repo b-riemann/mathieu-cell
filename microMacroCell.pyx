@@ -6,8 +6,8 @@ from numpy import absolute, amax, arange, cos, empty, exp, eye, zeros, sqrt as n
 from scipy.linalg import det, svd
 from scipy.optimize import minimize
 from libc.math cimport sin, sinh, sqrt, pi, fabs, asin
-from twist.tools import absq
 from numpy.linalg import solve
+from tools import absq
 
 cdef void populateM(double[:,:] M, double[:,:] vals):  #, int P):
     cdef int R = M.shape[0]  #=2P+1

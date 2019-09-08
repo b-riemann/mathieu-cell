@@ -1,10 +1,12 @@
-from numpy import mean, zeros, arange, pi, absolute, sin, sqrt, empty, exp, NaN, empty_like, moveaxis, amin, \
-    amax, polyfit, polyval, cos, ones_like, zeros_like, ones, copy
+from numpy import mean, zeros, arange, pi, absolute, sin, sqrt, empty, \
+        exp, NaN, empty_like, moveaxis, amin, array, \
+        amax, polyfit, polyval, cos, ones_like, zeros_like, ones, copy
 from numpy.linalg import LinAlgError
 from numpy.linalg import solve
-from twist.tools import absq, loadData, saveData, centaur
+from scipy.optimize import minimize
+from tools import loadData, saveData, centaur
 
-from microMacroCell import SimpleFloquetCell, Grapher, I5I2tme
+from microMacroCell import SimpleFloquetCell, OptFloquetCell, Grapher, I5I2tme
 
 
 def optimizeM2(m0start, m1start, m0N, m1N, m2N, cosTwoFlat, cosFourFlat):
@@ -193,17 +195,17 @@ class TuneMap:
                 self.k0[q, p] = k[0]
                 self.k1[q, p] = absolute(k[1])
 
-    def saveKs(self):
-        saveData('tmap.npz', tuneX=self.tuneX, tuneY=self.tuneY, k0=self.k0, k1=self.k1, b1=self.b1)
+    def saveKs(self, npz_filename):
+        saveData(npz_filename, tuneX=self.tuneX, tuneY=self.tuneY, k0=self.k0, k1=self.k1, b1=self.b1)
 
-    def loadKs(self):
-        x = loadData('tmap.npz')
+    def loadKs(self, npz_filename):
+        x = loadData(npz_filename)
         self.tuneX, self.tuneY, self.k0, self.k1, self.b1 = [x[fld] for fld in ('tuneX', 'tuneY', 'k0', 'k1', 'b1')]
 
     def mapper(self, whm_method, nargout=1, dtype=float):
         outputs = empty((*self.k0.shape, nargout), dtype)
         def obifun(b1, k0, k1):
-            x = array([k0,k1,b], dtype=float)
+            x = array([k0,k1,b1], dtype=float) # br note: b -> b1
             return whm_method(x)
 
         for q in range(self.tuneY.size):
@@ -218,11 +220,11 @@ class TuneMap:
         self.cubes.update({'tuneX': tuneX[:, :, None], 'tuneY': tuneY[:, :, None],
                            'chromaX': chromaX[:, :, None], 'chromaY': chromaY[:, :, None]})
 
-    def saveCubes(self):
-        saveData('cubes.npz', **self.cubes)
+    def saveCubes(self, npz_cubefile):
+        saveData(npz_cubefile, **self.cubes)
 
-    def loadCubes(self):
-        self.cubes = dict(loadData('cubes.npz'))
+    def loadCubes(self, npz_cubefile):
+        self.cubes = dict(loadData(npz_cubefile))
 
     def processCubes(self):
         F = self.cubes['I5'] / (self.cubes['I2'] - self.cubes['I4'])
