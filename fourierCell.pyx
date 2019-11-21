@@ -2,7 +2,7 @@
 
 from warnings import warn
 
-from numpy import absolute, amax, arange, array, cos, copy, empty, exp, eye, zeros, sqrt as np_sqrt, ones, outer, sin as np_sin, sum, mean, pi as np_pi, NaN, Inf
+from numpy import absolute, amax, arange, array, cos, copy, empty, exp, eye, zeros, sqrt as np_sqrt, savez, ones, outer, sin as np_sin, sum, mean, pi as np_pi, NaN, Inf
 from scipy.linalg import det, svd
 from scipy.optimize import minimize
 from libc.math cimport sin, sinh, sqrt, pi, fabs, asin
@@ -10,6 +10,7 @@ from numpy.linalg import solve, LinAlgError
 from scipy.optimize import minimize
 from time import sleep
 from tools import absq
+from pickle import dump as pkl_dump, load as pkl_load, HIGHEST_PROTOCOL
 
 I5I2tme = 2 * (pi/2) ** 3 / (3 * sqrt(15))
 
@@ -289,6 +290,14 @@ class Map:
         self.b1[q, p] = b1
         self.fval[q, p] = fval
 
+    def save(filename):
+        with open(filename,'w') as f:
+        pkl_dump(self, f, HIGHEST_PROTOCOL)
+
+    def load(filename):
+        with open(filename,'r') as f:
+        self = pkl_load(f)
+
 
 class TuneMap:
     def __init__(self, dots=100, tuneRange=None):
@@ -321,3 +330,6 @@ class TuneMap:
                 # print('G2')
                 self.mapG2.write(q,p,*directSearch(fc, fc.G2))
                 self.mapG2.atArray[q,p] = fc.gr.jX(), fc.gr.F(), fc.mWedge2(False)
+        self.mapF.save('F.pkl')
+        self.mapG2.save('G2.pkl')
+        savez('tunechroma.npz', tuneX=self.tuneX, tuneY=self.tuneY, k=self.k, chroma=self.chroma)
