@@ -1,5 +1,8 @@
 from matplotlib.pyplot import subplots, show, close, clabel
+from matplotlib import rcParams
 from numpy import arange, savez, load, mod
+
+rcParams['contour.negative_linestyle'] = 'solid'
 
 def saveFig(fig, filename=None, tight=False, **kwargs):
     if tight:

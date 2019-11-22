@@ -2,7 +2,7 @@
 
 from warnings import warn
 
-from numpy import absolute, amax, arange, array, cos, copy, empty, exp, eye, zeros, sqrt as np_sqrt, savez, ones, outer, sin as np_sin, sum, mean, pi as np_pi, NaN, Inf
+from numpy import absolute, amax, arange, array, cos, copy, empty, exp, eye, zeros, sqrt as np_sqrt, savez, ones, outer, sin as np_sin, sum, mean, pi as np_pi, NaN, Inf, load as np_load
 from scipy.linalg import det, svd
 from scipy.optimize import minimize
 from libc.math cimport sin, sinh, sqrt, pi, fabs, asin
@@ -266,7 +266,7 @@ def directSearch(fc, fun):
     b1=array([0.0])
     step=-0.2 #-0.2
     oldVal=Inf
-    while absolute(step)>0.002: #0.005
+    while absolute(step)>1e-4: # 0.002: #0.005
         b1+=step
         if b1<-5:
             break
@@ -275,6 +275,7 @@ def directSearch(fc, fun):
         if newVal>oldVal and oldVal>0:
             step /= -2
         oldVal=newVal
+    # print("b1 =", b1, ", fval=", oldVal)
     return b1, oldVal
 
 
@@ -290,13 +291,16 @@ class Map:
         self.b1[q, p] = b1
         self.fval[q, p] = fval
 
-    def save(filename):
-        with open(filename,'w') as f:
-        pkl_dump(self, f, HIGHEST_PROTOCOL)
 
-    def load(filename):
-        with open(filename,'r') as f:
-        self = pkl_load(f)
+def pkl_loadobj(filename):
+    with open(filename,'rb') as f:
+        x = pkl_load(f)
+    return x
+
+
+def pkl_dumpobj(filename, x):
+    with open(filename,'wb') as f:
+        pkl_dump(x, f, HIGHEST_PROTOCOL)
 
 
 class TuneMap:
@@ -330,6 +334,14 @@ class TuneMap:
                 # print('G2')
                 self.mapG2.write(q,p,*directSearch(fc, fc.G2))
                 self.mapG2.atArray[q,p] = fc.gr.jX(), fc.gr.F(), fc.mWedge2(False)
-        self.mapF.save('F.pkl')
-        self.mapG2.save('G2.pkl')
+        pkl_dumpobj('F.pkl', self.mapF)
+        pkl_dumpobj('G2.pkl', self.mapG2)
         savez('tunechroma.npz', tuneX=self.tuneX, tuneY=self.tuneY, k=self.k, chroma=self.chroma)
+        print('saved TuneMap data')
+
+    def load(self):
+        self.mapF = pkl_loadobj('F.pkl')
+        self.mapG2 = pkl_loadobj('G2.pkl')
+        x = np_load('tunechroma.npz')
+        self.tuneX, self.tuneY, self.k, self.chroma = [x[key] for key in ('tuneX', 'tuneY', 'k', 'chroma')]
+        print('loaded TuneMap data')
