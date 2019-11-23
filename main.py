@@ -39,10 +39,11 @@ if __name__ == '__main__':
     for filename in argv[1:]:
         if filename == "islands.pdf":
             print("overview of 3 stability islands in k0,k1 space")
-            fig, ax = subplots(figsize=(6, 4))
+            fig, ax = subplots(figsize=(4, 6))
             fks = FloquetKSpace(arange(-1, 4.01, 0.05), arange(0, 8.01, 0.05))
             fks.solveCxy()
             fks.plotStability(ax)
+            [ax.spines[dr].set_color(None) for dr in ('top', 'right')]
             saveFig(fig, filename, tight=True)
 
         elif filename == "necktie.pdf":
