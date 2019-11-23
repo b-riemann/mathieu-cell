@@ -158,14 +158,14 @@ class FloquetKSpace:
         if axRanges is None:
             axRanges = self.kRanges[:2]
         ax.contourf(axRanges[1], axRanges[0], self.cX, boundaries, colors='#ccccff')
-        ax.contour(axRanges[1], axRanges[0], self.cX, boundaries, colors='black', linewidths=borderLine)
+        ax.contour(axRanges[1], axRanges[0], self.cX, boundaries, colors=('black', 'blue'), linewidths=borderLine)
         if tuneLevels is not None:
             levels = sin(pi * tuneLevels) ** 2  # before [0, 0.25, 0.5, 0.75, 1]
             ax.contour(axRanges[1], axRanges[0], self.cX, levels, colors=levelColor, linewidths=0.5)
         if withMirror:
             cY = self.cY
             ax.contourf(axRanges[1], axRanges[0], cY, boundaries, colors='#ccffcc88')
-            ax.contour(axRanges[1], axRanges[0], cY, boundaries, colors='black', linewidths=borderLine)
+            ax.contour(axRanges[1], axRanges[0], cY, boundaries, colors=('black', 'red'), linewidths=borderLine)
             if tuneLevels is not None:
                 ax.contour(axRanges[1], axRanges[0], cY, levels, colors=levelColor, linewidths=0.5)
         ax.set(xlabel=xlabel, ylabel=ylabel)

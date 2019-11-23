@@ -39,7 +39,7 @@ if __name__ == '__main__':
     for filename in argv[1:]:
         if filename == "islands.pdf":
             print("overview of 3 stability islands in k0,k1 space")
-            fig, ax = subplots()
+            fig, ax = subplots(figsize=(6, 4))
             fks = FloquetKSpace(arange(-1, 4.01, 0.05), arange(0, 8.01, 0.05))
             fks.solveCxy()
             fks.plotStability(ax)
