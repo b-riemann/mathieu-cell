@@ -151,24 +151,23 @@ class FloquetKSpace:
         else:
             return self.cX[::-1]
 
-    def plotStability(self, ax, axRanges=None, withMirror=True, xlabel='$k_0$', ylabel='$k_1$', tuneLevels=None):
-        borderLine = 0.5
+    def plotStability(self, ax, axRanges=None, withMirror=True, labels=('$k_0$','$k_1$'), borderLine=0.7, borderColors=('blue', 'green'), tuneLevels=None):
         boundaries = 0, 1
         levelColor = '0.4'
         if axRanges is None:
             axRanges = self.kRanges[:2]
         ax.contourf(axRanges[0], axRanges[1], self.cX.T, boundaries, colors='#ccccff')
-        ax.contour(axRanges[0], axRanges[1], self.cX.T, boundaries, colors=('black', 'blue'), linewidths=borderLine)
+        ax.contour(axRanges[0], axRanges[1], self.cX.T, boundaries, colors=('black', borderColors[0]), linewidths=borderLine)
         if tuneLevels is not None:
             levels = sin(pi * tuneLevels) ** 2  # before [0, 0.25, 0.5, 0.75, 1]
             ax.contour(axRanges[0], axRanges[1], self.cX.T, levels, colors=levelColor, linewidths=0.5)
         if withMirror:
             cY = self.cY
             ax.contourf(axRanges[0], axRanges[1], cY.T, boundaries, colors='#ccffcc88')
-            ax.contour(axRanges[0], axRanges[1], cY.T, boundaries, colors=('black', 'red'), linewidths=borderLine)
+            ax.contour(axRanges[0], axRanges[1], cY.T, boundaries, colors=('black', borderColors[1]), linewidths=borderLine)
             if tuneLevels is not None:
                 ax.contour(axRanges[0], axRanges[1], cY.T, levels, colors=levelColor, linewidths=0.5)
-        ax.set(xlabel=xlabel, ylabel=ylabel)
+        ax.set(xlabel=labels[0], ylabel=labels[1])
 
 
 class TuneMap:
