@@ -3,6 +3,7 @@ from matplotlib import rcParams
 from numpy import arange, savez, load, mod
 
 rcParams['contour.negative_linestyle'] = 'solid'
+rcParams.update({'font.family': 'serif', 'font.size': 9})
 
 def saveFig(fig, filename=None, tight=False, **kwargs):
     if tight:
