@@ -1,4 +1,5 @@
 """Figure generator for Mathieu cells"""
+from matplotlib.pyplot import setp
 from numpy import arange, squeeze
 from tools import subplots, saveFig, centaur
 from floquetCell import FloquetKSpace
@@ -40,7 +41,7 @@ if __name__ == '__main__':
     from sys import argv
 
     columnWidth = 3.28  # adjusted for JaCoW
-    doubleWidth = 6.8
+    doubleWidth = 6.7
 
     for filename in argv[1:]:
         if filename == "islands.pdf":
@@ -75,15 +76,18 @@ if __name__ == '__main__':
 
         elif filename == "F.pdf":
             tm = generateMapIfNotExisting()
-            fig, ax = subplots(1, 3, figsize=(doubleWidth, columnWidth), sharex=True, sharey=True)
+            fig, ax = subplots(1, 4, figsize=(doubleWidth, 0.8*columnWidth), sharex=True, sharey=True)
             grayDiagram(ax[0], tm, tm.mapF.b1, arange(-1.4, -1.0, 0.1), fmt='%.1f', grayDiv=5)
-            grayDiagram(ax[1], tm, tm.mapF.fval, arange(6), fmt='%i', grayDiv=5,
-                        faceLims=((0.0, 1.0),), faceColors=('#cccccc',))
+            grayDiagram(ax[1], tm, tm.mapF.fval, arange(6), fmt='%i', grayDiv=5, grayMax=2,
+                        faceLims=((0.0, 1.0),), faceColors=('#ffffcc',))
             grayDiagram(ax[2], tm, tm.mapF.atArray[:, :, 0], arange(0, 4, 0.5), fmt='%.1f', grayDiv=5, grayMax=2.5,
                         faceLims=((-10, 0), (3, 10)), faceColors=('#cccccc', '#cccccc'))
 
             ax[0].set_xlim((0.2, 0.5))
-            fig.subplots_adjust(top=0.958, bottom=0.148, left=0.08, right=0.98, hspace=0.2, wspace=0.16)
+            for a in ax:
+                setp(a.get_xticklabels()[0], visible=False)
+
+            fig.subplots_adjust(top=0.96, bottom=0.15, left=0.08, right=0.98, wspace=0.1)
             saveFig(fig, filename)
 
         else:
