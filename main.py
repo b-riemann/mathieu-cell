@@ -52,17 +52,23 @@ if __name__ == '__main__':
             fks.plotStability(ax)
             [ax.spines[dr].set_color(None) for dr in ('top', 'right')]
             ax.set_xlim((-1, 4.01))
-            fig.subplots_adjust(top=0.965, bottom=0.115, left=0.115, right=0.97, hspace=0.2, wspace=0.2)
+            fig.subplots_adjust(top=0.965, bottom=0.115, left=0.115, right=0.97)
+
+            print('truncate to k1 <= 4')
+            fig.set_size_inches(columnWidth, 0.75*columnWidth)
+            ax.set_ylim((0,4))
+            fig.subplots_adjust(top = 0.969, bottom = 0.177, left = 0.127, right = 0.968)
+
             saveFig(fig, filename)
 
         elif filename == "necktie.pdf":
             print("zoom-in of the necktie island in k0,k1 space")
             fig, ax = subplots(figsize=(columnWidth, columnWidth))
-            fks = FloquetKSpace(arange(-0.26, 0.27, 0.02), arange(0, 0.93, 0.02))
+            fks = FloquetKSpace(arange(-0.34, 0.35, 0.02), arange(0, 0.93, 0.02))
             fks.solveCxy()
             fks.plotStability(ax, tuneLevels=arange(.1, .45, .1))
             [ax.spines[dr].set_color(None) for dr in ('top', 'right')]
-            fig.subplots_adjust(top=0.97, bottom=0.13, left=0.16, right=0.975, hspace=0.2, wspace=0.2)
+            fig.subplots_adjust(top=0.97, bottom=0.13, left=0.16, right=0.975)
             saveFig(fig, filename)
 
         elif filename == "chroma.pdf":
@@ -80,7 +86,7 @@ if __name__ == '__main__':
             print('subplot 0: b1')
             grayDiagram(ax[0], tm, tm.mapF.b1, arange(-1.4, -1.0, 0.1), fmt='%.1f', grayDiv=5)
             print('subplot 1: F')
-            grayDiagram(ax[1], tm, tm.mapF.fval, arange(6), fmt='%i', grayMax=2,
+            grayDiagram(ax[1], tm, tm.mapF.fval, arange(6), fmt='%i', grayMax=2, grayDiv=10,
                         faceLims=((0.0, 1.0),), faceColors=('#ffffcc',))
             print('subplot 2: '+tm.mapF.atNames[0])
             grayDiagram(ax[2], tm, tm.mapF.atArray[:, :, 0], arange(0, 4, 0.5), fmt='%.1f', grayMax=2.5,
@@ -88,7 +94,7 @@ if __name__ == '__main__':
             print('subplot 3: '+tm.mapF.atNames[2])
             grayDiagram(ax[3], tm, tm.mapF.atArray[:, :, 2], arange(-0.5, 0.55, 0.1), fmt='%.1f',
                         faceLims=((-0.02, 0.02),), faceColors=('#ffcccc',),
-                        grayDiv=5, grayMax=0.2, grayMin=-0.2)
+                        grayDiv=20, grayMax=0.02, grayMin=-0.02)
             ax[0].set_xlim((0.2, 0.5))
             for a in ax:
                 setp(a.get_xticklabels()[0], visible=False)
