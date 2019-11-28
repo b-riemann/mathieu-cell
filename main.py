@@ -41,7 +41,7 @@ if __name__ == '__main__':
     from sys import argv
 
     columnWidth = 3.28  # adjusted for JaCoW
-    doubleWidth = 6.7
+    doubleWidth = 6.68
 
     for filename in argv[1:]:
         if filename == "islands.pdf":
@@ -77,17 +77,23 @@ if __name__ == '__main__':
         elif filename == "F.pdf":
             tm = generateMapIfNotExisting()
             fig, ax = subplots(1, 4, figsize=(doubleWidth, 0.8*columnWidth), sharex=True, sharey=True)
+            print('subplot 0: b1')
             grayDiagram(ax[0], tm, tm.mapF.b1, arange(-1.4, -1.0, 0.1), fmt='%.1f', grayDiv=5)
-            grayDiagram(ax[1], tm, tm.mapF.fval, arange(6), fmt='%i', grayDiv=5, grayMax=2,
+            print('subplot 1: F')
+            grayDiagram(ax[1], tm, tm.mapF.fval, arange(6), fmt='%i', grayMax=2,
                         faceLims=((0.0, 1.0),), faceColors=('#ffffcc',))
-            grayDiagram(ax[2], tm, tm.mapF.atArray[:, :, 0], arange(0, 4, 0.5), fmt='%.1f', grayDiv=5, grayMax=2.5,
+            print('subplot 2: '+tm.mapF.atNames[0])
+            grayDiagram(ax[2], tm, tm.mapF.atArray[:, :, 0], arange(0, 4, 0.5), fmt='%.1f', grayMax=2.5,
                         faceLims=((-10, 0), (3, 10)), faceColors=('#cccccc', '#cccccc'))
-
+            print('subplot 3: '+tm.mapF.atNames[2])
+            grayDiagram(ax[3], tm, tm.mapF.atArray[:, :, 2], arange(-0.5, 0.55, 0.1), fmt='%.1f',
+                        faceLims=((-0.02, 0.02),), faceColors=('#ffcccc',),
+                        grayDiv=5, grayMax=0.2, grayMin=-0.2)
             ax[0].set_xlim((0.2, 0.5))
             for a in ax:
                 setp(a.get_xticklabels()[0], visible=False)
 
-            fig.subplots_adjust(top=0.96, bottom=0.15, left=0.08, right=0.98, wspace=0.1)
+            fig.subplots_adjust(top=0.97, bottom=0.15, left=0.07, right=0.98, wspace=0.1)
             saveFig(fig, filename)
 
         else:

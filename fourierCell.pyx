@@ -42,18 +42,24 @@ class Grapher:
         self.bCub = self.bSq * absolute(self.b)
 
     def i2(self):
+        # these are sums not means, use only for fractions of i2, i4, i5
         return sum(self.bSq)
 
     def i3(self):
+        # these are sums not means, use only for fractions of i2, i4, i5
         return sum(self.bCub)
 
     def i4(self):
-        # these are sums not means
+        # these are sums not means, use only for fractions of i2, i4, i5
         return 2*sum(self.eta * self.b * self.k)
 
     def i5(self):
+        # these are sums not means, use only for fractions of i2, i4, i5
         return sum(self.bCub * (self.gammaX * self.eta**2 + 2 * self.alphaX * self.eta * self.etaPrime
                                 + self.betaX * self.etaPrime ** 2))
+
+    def momComp(self):
+        return mean(self.b * self.eta)
 
     def F(self):
         i2 = self.i2()
@@ -315,7 +321,7 @@ class TuneMap:
         self.k[:] = NaN
         self.chroma = copy(self.k)
 
-        self.mapF = Map(shape, name='F', atNames=('jX',))
+        self.mapF = Map(shape, name='F', atNames=('jX', 'i5', 'momComp'))
         self.mapG2 = Map(shape, name='G2', atNames=('jX', 'F', 'mWedge2'))
 
     def make(self):
@@ -330,7 +336,7 @@ class TuneMap:
                 # ToDo:
                 # - write newton search on Jx (start, end) first
                 self.mapF.write(q,p,*directSearch(fc, fc.gr.F))
-                self.mapF.atArray[q,p,0] = fc.gr.jX()
+                self.mapF.atArray[q,p] = fc.gr.jX(), fc.gr.i5(), fc.gr.momComp()
                 # print('G2')
                 self.mapG2.write(q,p,*directSearch(fc, fc.G2))
                 self.mapG2.atArray[q,p] = fc.gr.jX(), fc.gr.F(), fc.mWedge2(False)
