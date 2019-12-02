@@ -40,8 +40,12 @@ def grayDiagram(ax, tm: TuneMap, quantity, levels=arange(11), fmt='%i', grayDiv=
 if __name__ == '__main__':
     from sys import argv
 
-    columnWidth = 3.28  # adjusted for JaCoW
+    # if mode=='JaCoW':
+    columnWidth = 3.28
     doubleWidth = 6.68
+    # elif mode=='PRAB':
+    #    pass
+
 
     for filename in argv[1:]:
         if filename == "islands.pdf":
