@@ -1,6 +1,13 @@
-# Mathieu cell studies
+# mathieu-cell
 
-author: Bernard Riemann (https://orcid.org/0000-0002-5102-9546)
+* elementary computations for studying Mathieu unit cells.
+
+* author: Bernard Riemann, [ORCID iD: 0000-0002-5102-9546](https://orcid.org/0000-0002-5102-9546)
+
+* used in the publication
+
+> B. Riemann, "An elementary low-emittance ring design study using Mathieu unit cells", abstract submitted to IPAC20.
+
 
 ## Usage
 

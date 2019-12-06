@@ -1,9 +1,9 @@
 """Figure generator for Mathieu cells"""
 from matplotlib.pyplot import setp
-from numpy import arange, squeeze
+from numpy import arange, squeeze, array
 from tools import subplots, saveFig, centaur
 from floquetCell import FloquetKSpace
-from fourierCell import TuneMap
+from fourierCell import TuneMap, FourierCell
 import os
 
 
@@ -61,27 +61,28 @@ if __name__ == '__main__':
             print('truncate to k1 <= 4')
             fig.set_size_inches(columnWidth, 0.75*columnWidth)
             ax.set_ylim((0,4))
-            fig.subplots_adjust(top = 0.969, bottom = 0.177, left = 0.127, right = 0.968)
+            fig.subplots_adjust(top=0.969, bottom=0.177, left=0.127, right=0.968)
 
             saveFig(fig, filename)
 
         elif filename == "necktie.pdf":
             print("zoom-in of the necktie island in k0,k1 space")
-            fig, ax = subplots(figsize=(columnWidth, columnWidth))
+            fig, ax = subplots(figsize=(columnWidth, 0.9*columnWidth))
             fks = FloquetKSpace(arange(-0.34, 0.35, 0.02), arange(0, 0.93, 0.02))
             fks.solveCxy()
             fks.plotStability(ax, tuneLevels=arange(.1, .45, .1))
             [ax.spines[dr].set_color(None) for dr in ('top', 'right')]
-            fig.subplots_adjust(top=0.97, bottom=0.13, left=0.16, right=0.975)
+            ax.yaxis.set_ticks(arange(10)/10)
+            fig.subplots_adjust(top=0.98, bottom=0.14, left=0.16, right=0.975)
             saveFig(fig, filename)
 
         elif filename == "chroma.pdf":
             tm = generateMapIfNotExisting()
-            fig, ax = subplots(figsize=(columnWidth, columnWidth))
+            fig, ax = subplots(figsize=(columnWidth, 0.9*columnWidth))
             grayDiagram(ax, tm, tm.chroma[:, :, 0], arange(-2.5, 0.1, 0.5), fmt='%.1f', grayDiv=5, grayMin=-1)
             ax.plot((0, 0.5), (0, 0.5), color='black', linewidth=0.3, linestyle='dashed')
             ax.set_aspect('equal')
-            fig.subplots_adjust(top=0.975, bottom=0.117, left=0.157, right=0.961, hspace=0.2, wspace=0.2)
+            fig.subplots_adjust(top=0.985, bottom=0.13, left=0.157, right=0.961)
             saveFig(fig, filename)
 
         elif filename == "F.pdf":
@@ -104,6 +105,23 @@ if __name__ == '__main__':
                 setp(a.get_xticklabels()[0], visible=False)
 
             fig.subplots_adjust(top=0.97, bottom=0.15, left=0.07, right=0.98, wspace=0.1)
+            saveFig(fig, filename)
+
+        elif filename == "example.pdf":
+            fc = FourierCell()
+            fc.tuneTo(0.45, 0.35)
+            fc.setB(array([-1.09]))
+
+            fig, ax = subplots(figsize=(0.5*columnWidth,0.6*columnWidth))
+            ax.plot(2*fc.gr.sL, fc.gr.b, label='b(s)')
+            ax.plot(2*fc.gr.sL, fc.gr.k, label='k(s)')
+            ax.plot(2*fc.gr.sL, fc.gr.betaX, label=r'$\beta_x(s)$')
+            ax.plot(2*fc.gr.sL, fc.gr.eta, label=r'$\eta(s)$')
+            ax.set(xlim=(0,1), xlabel=r's / $2\pi$', ylim=(-2,17))
+            fig.subplots_adjust(top=0.999, bottom=0.195, left=0.164, right=0.941)
+            [ax.spines[dr].set_color(None) for dr in ('top', 'right')]
+            ax.axhline(0, color='black', linestyle='dotted')
+            ax.legend()
             saveFig(fig, filename)
 
         else:
