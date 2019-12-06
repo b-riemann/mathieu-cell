@@ -1,4 +1,4 @@
-# cython: language_level=3str, boundscheck=False, wraparound=False
+# cython: language_level=3, boundscheck=False, wraparound=False
 
 from warnings import warn
 

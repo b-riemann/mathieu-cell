@@ -109,26 +109,30 @@ if __name__ == '__main__':
 
         elif filename == "example.pdf":
             fc = FourierCell()
-            b1 = -1.09
-            # tunes = fc.tuneTo(0.45, 0.35)
-            k = array([-0.0480, 0.8554])
-            print("k_0 = %.4f, k_1 = %.4f, b1 = %.4f" % (*fc.k, b1))
-            tunes = fc.setKxy(k)
+            b1 = -1.11
+            if False: # k vals from tunes
+                tunes = fc.tuneTo(0.45, 0.35)
+                k = fc.k
+            else: # tunes from k vals
+                k = array([0.04801, 0.85536])
+                tunes = fc.setKxy(k)
+            print("k_0 = %.5f, k_1 = %.5f, b1 = %.4f" % (*fc.k, b1))
             print("nu_x = %.8f, nu_y=%.8f" % tunes)
             fc.setB(array([b1]))
-            print("F = %.4f" % fc.gr.F())
+            print("F = %.4f, Jx = %.4f, xi_x = %.4f, xi_y = %.4f, alpha=%.6f" % 
+              (fc.gr.F(),fc.gr.jX(),*fc.gr.naturalChroma(),fc.gr.momComp()))
 
-            print(fc.fs.tune())
-            fig, ax = subplots(figsize=(0.5*columnWidth,0.6*columnWidth))
-            ax.plot(2*fc.gr.sL, fc.gr.b, label='b(s)')
-            ax.plot(2*fc.gr.sL, fc.gr.k, label='k(s)')
-            ax.plot(2*fc.gr.sL, fc.gr.betaX, label=r'$\beta_x(s)$')
-            ax.plot(2*fc.gr.sL, fc.gr.eta, label=r'$\eta(s)$')
+            fig, ax = subplots(figsize=(0.5*columnWidth,0.68*columnWidth))
+            ax.plot(2*fc.gr.sL, fc.gr.b, label='b(s)', linewidth=0.5)
+            ax.plot(2*fc.gr.sL, fc.gr.k, label='k(s)', linewidth=0.5)
+            ax.plot(2*fc.gr.sL, fc.gr.betaX, label=r'$\beta_x(s)$', color='xkcd:navy blue')
+            ax.plot(2*fc.gr.sL, fc.gr.betaY, label=r'$\beta_y(s)$', color='0.5')
+            ax.plot(2*fc.gr.sL, fc.gr.eta, label=r'$\eta(s)$', color='red')
             ax.set(xlim=(0,1), xlabel=r's / $2\pi$', ylim=(-2,17))
-            fig.subplots_adjust(top=0.999, bottom=0.195, left=0.164, right=0.941)
+            fig.subplots_adjust(top=0.999, bottom=0.19, left=0.164, right=0.941)
             [ax.spines[dr].set_color(None) for dr in ('top', 'right')]
-            ax.axhline(0, color='black', linestyle='dotted')
-            ax.legend()
+            ax.axhline(0, color='black', linestyle='dashed', linewidth=0.5)
+            ax.legend(prop={'size': 8})
             saveFig(fig, filename)
 
         else:
