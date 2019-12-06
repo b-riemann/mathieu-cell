@@ -109,9 +109,16 @@ if __name__ == '__main__':
 
         elif filename == "example.pdf":
             fc = FourierCell()
-            fc.tuneTo(0.45, 0.35)
-            fc.setB(array([-1.09]))
+            b1 = -1.09
+            # tunes = fc.tuneTo(0.45, 0.35)
+            k = array([-0.0480, 0.8554])
+            print("k_0 = %.4f, k_1 = %.4f, b1 = %.4f" % (*fc.k, b1))
+            tunes = fc.setKxy(k)
+            print("nu_x = %.8f, nu_y=%.8f" % tunes)
+            fc.setB(array([b1]))
+            print("F = %.4f" % fc.gr.F())
 
+            print(fc.fs.tune())
             fig, ax = subplots(figsize=(0.5*columnWidth,0.6*columnWidth))
             ax.plot(2*fc.gr.sL, fc.gr.b, label='b(s)')
             ax.plot(2*fc.gr.sL, fc.gr.k, label='k(s)')

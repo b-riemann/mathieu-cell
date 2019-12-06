@@ -209,6 +209,7 @@ class FourierCell:
 
         self.gr.k[:] = self._convertK @ k
         self.k = k
+        return tune
 
     def setKxy(self, k):
         self.fs.setK(-k)
@@ -218,7 +219,8 @@ class FourierCell:
         uY = (self._convert @ uParsY) #* euSpiral
         uYPrime = 2.j * self._convert @ (uParsY * (self.fs.pRange + tuneY)) #* euSpiral
         self.gr.feedY(uY, uYPrime)
-        self.setKx(k)
+        tuneX = self.setKx(k)
+        return tuneX, tuneY
 
     def setB(self, bNonZero):
         """use after .setKx or .setKxy"""
@@ -242,7 +244,7 @@ class FourierCell:
         kStart=copy(self.k)
 
         res = minimize(self.lagrangeTuneEq, kStart)
-        self.setKxy(res.x)
+        return self.setKxy(res.x)
 
     def mWedge2(self, setMSext=False):
         # compensate chroma by sextupole vector with 2 dof. only implemented for k.size=2
