@@ -99,7 +99,7 @@ if __name__ == '__main__':
             print('subplot 3: '+tm.mapF.atNames[2])
             grayDiagram(ax[3], tm, 1e3*tm.mapF.atArray[:, :, 2], # (-0.1, -1e-2, -1e-3, -1e-4, 1e-4, 1e-3, 1e-2, 0.1), fmt='%.1e', 
 		arange(-100, 101, 25), fmt='%i',
-                        faceLims=((-5, 5),(-1,1)), faceColors=('#ffcccc','#ffccff'),
+                        faceLims=((-5, 5),), faceColors=('#ffcccc',),
                         grayDiv=5, grayMax=25, grayMin=-25)
             ax[0].set_xlim((0.2, 0.5))
             for a in ax:
