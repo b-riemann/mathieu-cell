@@ -59,7 +59,7 @@ class Grapher:
                                 + self.betaX * self.etaPrime ** 2))
 
     def momComp(self):
-        return mean(self.b * self.eta)
+        return mean(self.b * self.eta) * (2/pi)**2
 
     def F(self):
         i2 = self.i2()

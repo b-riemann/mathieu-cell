@@ -97,9 +97,10 @@ if __name__ == '__main__':
             grayDiagram(ax[2], tm, tm.mapF.atArray[:, :, 0], arange(0, 4, 0.5), fmt='%.1f', grayMax=2.5,
                         faceLims=((-10, 0), (3, 10)), faceColors=('#cccccc', '#cccccc'))
             print('subplot 3: '+tm.mapF.atNames[2])
-            grayDiagram(ax[3], tm, tm.mapF.atArray[:, :, 2], arange(-0.5, 0.55, 0.1), fmt='%.1f',
-                        faceLims=((-0.02, 0.02),), faceColors=('#ffcccc',),
-                        grayDiv=20, grayMax=0.02, grayMin=-0.02)
+            grayDiagram(ax[3], tm, 1e3*tm.mapF.atArray[:, :, 2], # (-0.1, -1e-2, -1e-3, -1e-4, 1e-4, 1e-3, 1e-2, 0.1), fmt='%.1e', 
+		arange(-100, 101, 25), fmt='%i',
+                        faceLims=((-5, 5),(-1,1)), faceColors=('#ffcccc','#ffccff'),
+                        grayDiv=5, grayMax=25, grayMin=-25)
             ax[0].set_xlim((0.2, 0.5))
             for a in ax:
                 setp(a.get_xticklabels()[0], visible=False)
