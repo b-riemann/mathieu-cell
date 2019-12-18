@@ -246,7 +246,8 @@ class FourierCell:
         res = minimize(self.lagrangeTuneEq, kStart)
         return self.setKxy(res.x)
 
-    def mWedge2(self, setMSext=False):
+
+    def sextuVals(self, setMSext=False):
         # compensate chroma by sextupole vector with 2 dof. only implemented for k.size=2
         twoTimesTwo = self.gr._matrixB() @ self._convertK
         try:
@@ -255,20 +256,17 @@ class FourierCell:
             raise LinAlgError('k.size != 2?')
         if setMSext:
             self.gr.mSext[:] = self._convertK @ x
-        x = absolute(x)
-        return x[0] + 2*x[1]
+        return x
+
 
     def G2(self, setMSext=False):
-        return self.gr.F() * self.mWedge2(setMSext)**(0.75)
-
-    def mWedgeN(self, basisConstraints, chroma):
-        # minimization of sextupole excursion with arbitrary dof by linear programming
-        # linprog(...)
-        # return 1/sol[0]
-        pass
+        absM = absolute(self.sextuVals(setMSext))
+        maxM = absM[0] + 2*absM[1]
+        return self.gr.F() * maxM**(0.75)
 
     def __str__(self):
         return "FourierCell at k=%s. graphed F=%.2f, jX=%.2f" % (self.k.__str__(), self.gr.F(), self.gr.jX())
+
 
 def directSearch(fc, fun):
     b1=array([0.0])
@@ -323,8 +321,8 @@ class TuneMap:
         self.k[:] = NaN
         self.chroma = copy(self.k)
 
-        self.mapF = Map(shape, name='F', atNames=('jX', 'i5', 'momComp'))
-        self.mapG2 = Map(shape, name='G2', atNames=('jX', 'F', 'mWedge2'))
+        self.mapF = Map(shape, name='F', atNames=('jX', 'i5', 'momComp', 'm0', 'm1'))
+        self.mapG2 = Map(shape, name='G2', atNames=('jX', 'F', 'm0', 'm1'))
 
     def make(self):
         fc = FourierCell()
@@ -338,10 +336,10 @@ class TuneMap:
                 # ToDo:
                 # - write newton search on Jx (start, end) first
                 self.mapF.write(q,p,*directSearch(fc, fc.gr.F))
-                self.mapF.atArray[q,p] = fc.gr.jX(), fc.gr.i5(), fc.gr.momComp()
+                self.mapF.atArray[q,p] = fc.gr.jX(), fc.gr.i5(), fc.gr.momComp(), *fc.sextuVals()
                 # print('G2')
                 self.mapG2.write(q,p,*directSearch(fc, fc.G2))
-                self.mapG2.atArray[q,p] = fc.gr.jX(), fc.gr.F(), fc.mWedge2(False)
+                self.mapG2.atArray[q,p] = fc.gr.jX(), fc.gr.F(), *fc.sextuVals()
         pkl_dumpobj('F.pkl', self.mapF)
         pkl_dumpobj('G2.pkl', self.mapG2)
         savez('tunechroma.npz', tuneX=self.tuneX, tuneY=self.tuneY, k=self.k, chroma=self.chroma)
