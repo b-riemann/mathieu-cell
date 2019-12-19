@@ -140,14 +140,14 @@ if __name__ == '__main__':
             tm = generateMapIfNotExisting()
             fig, ax = subplots(1, 2, figsize=(columnWidth, 0.8*columnWidth), sharex=True, sharey=True)
             print('subplot 0: '+tm.mapF.atNames[3])
-            grayDiagram(ax[0], tm, tm.mapF.atArray[:, :, 3], arange(-1.0, 2.0, 0.2), fmt='%.1f', grayDiv=5)
+            grayDiagram(ax[0], tm, tm.mapF.atArray[:, :, 3], arange(-1.6, 0.1, 0.2), fmt='%.1f', grayDiv=2)
             print('subplot 1: '+tm.mapF.atNames[4])
-            grayDiagram(ax[1], tm, tm.mapF.atArray[:, :, 4], arange(-1.0, 2.0, 0.2), fmt='%.1f', grayDiv=5)
+            grayDiagram(ax[1], tm, tm.mapF.atArray[:, :, 4], arange(0, 1.4, 0.2), fmt='%.1f', grayDiv=2)
             ax[0].set_xlim((0.2, 0.5))
             for a in ax:
                 setp(a.get_xticklabels()[0], visible=False)
 
-            fig.subplots_adjust(top=0.97, bottom=0.15, left=0.155, right=0.99, wspace=0.1)
+            fig.subplots_adjust(top=0.97, bottom=0.15, left=0.155, right=0.97, wspace=0.1)
             saveFig(fig, filename)
 
 
