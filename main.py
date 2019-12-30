@@ -15,16 +15,6 @@ def generateMapIfNotExisting():
     else:
         print("computing k values for tune map. this only needs to be done once.")
         tm.make()
-    #     tm.generateKs()
-    #     tm.saveKs(npz_filename)
-
-    # if os.path.isfile(npz_cubefile):
-    #     tm.loadCubes(npz_cubefile)
-    # else:
-    #     print("computing objective functions on cube. this only needs to be done once.")
-    #     tm.generateCubes()
-    #     tm.saveCubes(npz_cubefile)
-    # tm.processCubes()
     return tm
 
 
@@ -119,7 +109,7 @@ if __name__ == '__main__':
                 tunes = fc.setKxy(k)
             print("k_0 = %.5f, k_1 = %.5f, b1 = %.4f" % (*fc.k, b1))
             print("nu_x = %.8f, nu_y=%.8f" % tunes)
-            fc.setB(array([b1]))
+            fc.setB(array([b1])) #[b1,1.3]))
             print("F = %.4f, Jx = %.4f, xi_x = %.4f, xi_y = %.4f, alpha=%.6f" % 
               (fc.gr.F(),fc.gr.jX(),*fc.gr.naturalChroma(),fc.gr.momComp()))
 
