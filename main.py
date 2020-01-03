@@ -7,7 +7,6 @@ from fourierCell import TuneMap, FourierCell
 import os
 
 
-# to be adapted to fourierCell.TuneMap (before: floquetCell.TuneMap)
 def generateMapIfNotExisting():
     tm = TuneMap()  # b1Range=-arange(0, 1.5, 0.02)) # -arange(0, 1.5, 0.05)  # arange(0, 2, 0.1), arange(-1.4, 0.01, 0.05)
     if os.path.isfile('F.pkl'):
@@ -25,6 +24,11 @@ def grayDiagram(ax, tm: TuneMap, quantity, levels=arange(11), fmt='%i', grayDiv=
     ax.spines['right'].set_color(borderColors[0])
     ax.spines['top'].set_color(borderColors[1])
     ax.label_outer()
+
+
+def plotF(ax, tm, F):
+    grayDiagram(ax, tm, F, arange(6), fmt='%i', grayMax=2, grayDiv=10,
+                faceLims=((0.0, 1.0),), faceColors=('#ffffcc',))
 
 
 if __name__ == '__main__':
@@ -76,13 +80,13 @@ if __name__ == '__main__':
             saveFig(fig, filename)
 
         elif filename == "F.pdf":
+            print("some figures of merit for F-optimized cells (excluding sextupole strengths)")
             tm = generateMapIfNotExisting()
             fig, ax = subplots(1, 4, figsize=(doubleWidth, 0.8*columnWidth), sharex=True, sharey=True)
             print('subplot 0: b1')
             grayDiagram(ax[0], tm, tm.mapF.b1, arange(-1.4, -1.0, 0.1), fmt='%.1f', grayDiv=5)
             print('subplot 1: F')
-            grayDiagram(ax[1], tm, tm.mapF.fval, arange(6), fmt='%i', grayMax=2, grayDiv=10,
-                        faceLims=((0.0, 1.0),), faceColors=('#ffffcc',))
+            plotF(ax[1], tm, tm.mapF.fval)            
             print('subplot 2: '+tm.mapF.atNames[0])
             grayDiagram(ax[2], tm, tm.mapF.atArray[:, :, 0], arange(0, 4, 0.5), fmt='%.1f', grayMax=2.5,
                         faceLims=((-10, 0), (3, 10)), faceColors=('#cccccc', '#cccccc'))
@@ -127,6 +131,7 @@ if __name__ == '__main__':
             saveFig(fig, filename)
 
         elif filename == "sextuVals.pdf":
+            print("F-optimized sextupole strength coefficients m0, m1")
             tm = generateMapIfNotExisting()
             fig, ax = subplots(1, 2, figsize=(columnWidth, 0.8*columnWidth), sharex=True, sharey=True)
             print('subplot 0: '+tm.mapF.atNames[3])
@@ -140,7 +145,34 @@ if __name__ == '__main__':
             fig.subplots_adjust(top=0.97, bottom=0.15, left=0.155, right=0.97, wspace=0.1)
             saveFig(fig, filename)
 
+        elif filename == "G.pdf":
+            print("some figures of merit for G-optimized cells (excluding sextupole strengths)")
+            tm = generateMapIfNotExisting()
+            fig, ax = subplots(1, 4, figsize=(doubleWidth, 0.8*columnWidth), sharex=True, sharey=True)
+            print('subplot 0: b1')
+            grayDiagram(ax[0], tm, tm.mapG2.b1, arange(-1.2, -1.0, 0.01), fmt='%.2f', grayDiv=2)
+            # print('subplot 1: G')
+            # grayDiagram(ax[1], tm, tm.mapG2.fval, arange(6), fmt='%i', grayMax=2, grayDiv=10)
+            print('subplot 1: F')
+            plotF(ax[1], tm, tm.mapG2.atArray[:, :, 1])
+            print('subplot 2: '+tm.mapG2.atNames[0])
+            grayDiagram(ax[2], tm, tm.mapG2.atArray[:, :, 0], arange(0, 4, 0.5), fmt='%.1f', grayMax=2.5,
+                        faceLims=((-10, 0), (3, 10)), faceColors=('#cccccc', '#cccccc'))
+            print('subplot 3: '+tm.mapG2.atNames[2])
+            grayDiagram(ax[3], tm, 1e3*tm.mapG2.atArray[:, :, 2],
+		arange(-100, 101, 25), fmt='%i', grayDiv=5, grayMax=25, grayMin=-25)
+            ax[0].set_xlim((0.2, 0.5))
+            for a in ax:
+                setp(a.get_xticklabels()[0], visible=False)
+
+            fig.subplots_adjust(top=0.97, bottom=0.15, left=0.07, right=0.98, wspace=0.1)
+            saveFig(fig, filename)
 
 
         else:
             print("unrecognized filename")
+            tm = generateMapIfNotExisting()
+            fig, ax = subplots()
+            ax.imshow(tm.mapF.fval, origin='lower')
+            saveFig(fig)
+

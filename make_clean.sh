@@ -1,2 +1,2 @@
 #!/bin/sh
-rm -f F.pkl
+rm -f F.pkl *.pdf

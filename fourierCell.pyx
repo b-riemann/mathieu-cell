@@ -322,12 +322,13 @@ class TuneMap:
         self.chroma = copy(self.k)
 
         self.mapF = Map(shape, name='F', atNames=('jX', 'i5', 'momComp', 'm0', 'm1'))
-        self.mapG2 = Map(shape, name='G2', atNames=('jX', 'F', 'm0', 'm1'))
+        self.mapG2 = Map(shape, name='G2', atNames=('jX', 'F', 'momComp', 'm0', 'm1'))
 
     def make(self):
         fc = FourierCell()
+        qmax = self.tuneY.size
         for q, tuneY in enumerate(self.tuneY.flat):
-            print(q)
+            print('%3i / %3i' % (q,qmax), end='\r')
             for p, tuneX in enumerate(self.tuneX.flat):
                 fc.tuneTo(tuneX, tuneY)
                 self.k[q,p] = fc.k
@@ -339,7 +340,7 @@ class TuneMap:
                 self.mapF.atArray[q,p] = fc.gr.jX(), fc.gr.i5(), fc.gr.momComp(), *fc.sextuVals()
                 # print('G2')
                 self.mapG2.write(q,p,*directSearch(fc, fc.G2))
-                self.mapG2.atArray[q,p] = fc.gr.jX(), fc.gr.F(), *fc.sextuVals()
+                self.mapG2.atArray[q,p] = fc.gr.jX(), fc.gr.F(), fc.gr.momComp(), *fc.sextuVals()
         pkl_dumpobj('F.pkl', self.mapF)
         pkl_dumpobj('G2.pkl', self.mapG2)
         savez('tunechroma.npz', tuneX=self.tuneX, tuneY=self.tuneY, k=self.k, chroma=self.chroma)
