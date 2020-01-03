@@ -30,6 +30,9 @@ def plotF(ax, tm, F):
     grayDiagram(ax, tm, F, arange(6), fmt='%i', grayMax=2, grayDiv=10,
                 faceLims=((0.0, 1.0),), faceColors=('#ffffcc',))
 
+def plotJx(ax, tm, jX, grayMax=3.0):
+    grayDiagram(ax, tm, jX, arange(0, 3.1, 0.5), fmt='%.1f', grayMax=grayMax,
+                faceLims=((-10, 0), (3, 100)), faceColors=('#cccccc', '#cccccc'))
 
 if __name__ == '__main__':
     from sys import argv
@@ -88,8 +91,7 @@ if __name__ == '__main__':
             print('subplot 1: F')
             plotF(ax[1], tm, tm.mapF.fval)            
             print('subplot 2: '+tm.mapF.atNames[0])
-            grayDiagram(ax[2], tm, tm.mapF.atArray[:, :, 0], arange(0, 4, 0.5), fmt='%.1f', grayMax=2.5,
-                        faceLims=((-10, 0), (3, 10)), faceColors=('#cccccc', '#cccccc'))
+            plotJx(ax[2], tm, tm.mapF.atArray[:, :, 0])
             print('subplot 3: '+tm.mapF.atNames[2])
             grayDiagram(ax[3], tm, 1e3*tm.mapF.atArray[:, :, 2], # (-0.1, -1e-2, -1e-3, -1e-4, 1e-4, 1e-3, 1e-2, 0.1), fmt='%.1e', 
 		arange(-100, 101, 25), fmt='%i',
@@ -149,19 +151,18 @@ if __name__ == '__main__':
             print("some figures of merit for G-optimized cells (excluding sextupole strengths)")
             tm = generateMapIfNotExisting()
             fig, ax = subplots(1, 4, figsize=(doubleWidth, 0.8*columnWidth), sharex=True, sharey=True)
-            print('subplot 0: b1')
-            grayDiagram(ax[0], tm, tm.mapG2.b1, arange(-1.2, -1.0, 0.01), fmt='%.2f', grayDiv=2)
-            # print('subplot 1: G')
-            # grayDiagram(ax[1], tm, tm.mapG2.fval, arange(6), fmt='%i', grayMax=2, grayDiv=10)
-            print('subplot 1: F')
+            # print('subplot 0: b1')
+            # grayDiagram(ax[0], tm, tm.mapG2.b1, arange(-1.2, -0.1, 0.1), fmt='%.2f', grayDiv=2)
+            print('subplot 0: G')
+            grayDiagram(ax[0], tm, tm.mapG2.fval, arange(6), fmt='%i', grayMax=2, grayDiv=10)
+            print('subplot 1: '+tm.mapG2.atNames[1])
             plotF(ax[1], tm, tm.mapG2.atArray[:, :, 1])
             print('subplot 2: '+tm.mapG2.atNames[0])
-            grayDiagram(ax[2], tm, tm.mapG2.atArray[:, :, 0], arange(0, 4, 0.5), fmt='%.1f', grayMax=2.5,
-                        faceLims=((-10, 0), (3, 10)), faceColors=('#cccccc', '#cccccc'))
+            plotJx(ax[2], tm, tm.mapG2.atArray[:, :, 0])
             print('subplot 3: '+tm.mapG2.atNames[2])
             grayDiagram(ax[3], tm, 1e3*tm.mapG2.atArray[:, :, 2],
 		arange(-100, 101, 25), fmt='%i', grayDiv=5, grayMax=25, grayMin=-25)
-            ax[0].set_xlim((0.2, 0.5))
+            # ax[0].set_xlim((0.2, 0.5))
             for a in ax:
                 setp(a.get_xticklabels()[0], visible=False)
 
