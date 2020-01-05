@@ -34,6 +34,33 @@ def plotJx(ax, tm, jX, grayMax=3.0):
     grayDiagram(ax, tm, jX, arange(0, 3.1, 0.5), fmt='%.1f', grayMax=grayMax,
                 faceLims=((-10, 0), (3, 100)), faceColors=('#cccccc', '#cccccc'))
 
+def b1scan(axA, axB, nuX=0.45, nuY=0.35):
+    fc = FourierCell()
+    tunes = fc.tuneTo(nuX, nuY)
+    # tunes = fc.tuneTo(0.15, 0.35)
+    print("k_0 = %.5f, k_1 = %.5f" % tuple(fc.k))
+    b1range = -arange(0,2,0.02)
+    F = empty_like(b1range)
+    jX = empty_like(b1range)
+    i2sum = empty_like(b1range)
+    G = empty_like(b1range)
+    maxM = empty_like(b1range)
+    arange(0,2,0.1)
+    for n, b1 in enumerate(b1range):
+        fc.setB(array([b1]))
+        F[n] = fc.gr.F()
+        G[n] = fc.G2(setMSext=True)
+        jX[n] = fc.gr.jX()
+        i2sum[n] = fc.gr.i2()
+        maxM[n] = amax(absolute(fc.gr.mSext))
+    axA.plot(-b1range, G, label='G')
+    axA.plot(-b1range, maxM, label='max m')
+    axB.plot(-b1range, F, label='F')
+    axB.plot(-b1range, jX, label='jX')
+    axB.plot(-b1range, i2sum/100, label='i2sum/100(remove)')
+
+
+
 if __name__ == '__main__':
     from sys import argv
 
@@ -170,27 +197,10 @@ if __name__ == '__main__':
             saveFig(fig, filename)
 
         elif filename == "b1scan.pdf":
-            fc = FourierCell()
-            tunes = fc.tuneTo(0.45, 0.35)
-            print("k_0 = %.5f, k_1 = %.5f" % tuple(fc.k))
-            b1range = -arange(0,2,0.02)
-            F = empty_like(b1range)
-            jX = empty_like(b1range)
-            G = empty_like(b1range)
-            maxM = empty_like(b1range)
-            arange(0,2,0.1)
-            for n, b1 in enumerate(b1range):
-                fc.setB(array([b1]))
-                F[n] = fc.gr.F()
-                G[n] = fc.G2(setMSext=True)
-                jX[n] = fc.gr.jX()
-                maxM[n] = amax(absolute(fc.gr.mSext))
-            fig, ax = subplots(2, 1, figsize=(columnWidth, 0.8*columnWidth), sharex=True, sharey='row')
-            ax[0].plot(-b1range, G, label='G')
-            ax[0].plot(-b1range, maxM, label='max m')
-            ax[1].plot(-b1range, F, label='F')
-            ax[1].plot(-b1range, jX, label='jX')
-            for a in ax:
+            fig, ax = subplots(2, 2, figsize=(doubleWidth, 0.8*columnWidth), sharex=True, sharey='row')
+            b1scan(ax[0,0], ax[0,1], nuX=0.45)
+            b1scan(ax[1,0], ax[1,1], nuX=0.15)
+            for a in ax.flat:
                 [a.spines[dr].set_color(None) for dr in ('top', 'right')]
                 a.set_ylim((0,15))
                 a.legend()
