@@ -1,6 +1,6 @@
 """Figure generator for Mathieu cells"""
 from matplotlib.pyplot import setp
-from numpy import arange, squeeze, array
+from numpy import arange, squeeze, array, empty_like, amax, absolute
 from tools import subplots, saveFig, centaur
 from floquetCell import FloquetKSpace
 from fourierCell import TuneMap, FourierCell
@@ -169,6 +169,32 @@ if __name__ == '__main__':
             fig.subplots_adjust(top=0.97, bottom=0.15, left=0.07, right=0.98, wspace=0.1)
             saveFig(fig, filename)
 
+        elif filename == "b1scan.pdf":
+            fc = FourierCell()
+            tunes = fc.tuneTo(0.45, 0.35)
+            print("k_0 = %.5f, k_1 = %.5f" % tuple(fc.k))
+            b1range = -arange(0,2,0.02)
+            F = empty_like(b1range)
+            jX = empty_like(b1range)
+            G = empty_like(b1range)
+            maxM = empty_like(b1range)
+            arange(0,2,0.1)
+            for n, b1 in enumerate(b1range):
+                fc.setB(array([b1]))
+                F[n] = fc.gr.F()
+                G[n] = fc.G2(setMSext=True)
+                jX[n] = fc.gr.jX()
+                maxM[n] = amax(absolute(fc.gr.mSext))
+            fig, ax = subplots(2, 1, figsize=(columnWidth, 0.8*columnWidth), sharex=True, sharey='row')
+            ax[0].plot(-b1range, G, label='G')
+            ax[0].plot(-b1range, maxM, label='max m')
+            ax[1].plot(-b1range, F, label='F')
+            ax[1].plot(-b1range, jX, label='jX')
+            for a in ax:
+                [a.spines[dr].set_color(None) for dr in ('top', 'right')]
+                a.set_ylim((0,15))
+                a.legend()
+            saveFig(fig)  #, filename)
 
         else:
             print("unrecognized filename")
