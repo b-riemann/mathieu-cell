@@ -1,6 +1,7 @@
 """Figure generator for Mathieu cells"""
 from matplotlib.pyplot import setp
-from numpy import arange, squeeze, array, empty_like, amax, absolute
+from numpy import arange, squeeze, array, empty_like, amax, absolute, NaN
+from scipy.optimize import minimize
 from tools import subplots, saveFig, centaur
 from floquetCell import FloquetKSpace
 from fourierCell import TuneMap, FourierCell
@@ -34,32 +35,44 @@ def plotJx(ax, tm, jX, grayMax=3.0):
     grayDiagram(ax, tm, jX, arange(0, 3.1, 0.5), fmt='%.1f', grayMax=grayMax,
                 faceLims=((-10, 0), (3, 100)), faceColors=('#cccccc', '#cccccc'))
 
-def b1scan(axA, axB, nuX=0.45, nuY=0.35):
+def obig(b2, b1, fc : FourierCell):
+    fc.setB(array([b1,b2]))
+    return fc.G2()  # (fc.gr.jX()-2.5)**2 # fc.G2()
+
+def b1scan(axA, axB, nuX=0.45, nuY=0.35, minim=False):
     fc = FourierCell()
     tunes = fc.tuneTo(nuX, nuY)
     # tunes = fc.tuneTo(0.15, 0.35)
     print("k_0 = %.5f, k_1 = %.5f" % tuple(fc.k))
-    b1range = -arange(0,2,0.02)
+    b1range = -arange(0,2.5,0.02)
     F = empty_like(b1range)
     jX = empty_like(b1range)
-    i2sum = empty_like(b1range)
+    i5i2 = empty_like(b1range)
     G = empty_like(b1range)
     maxM = empty_like(b1range)
-    arange(0,2,0.1)
     for n, b1 in enumerate(b1range):
-        fc.setB(array([b1]))
+        if minim:
+            result = minimize(obig, 0, args=(b1,fc))
+            fc.setB(array([b1,result.x]))
+        else:
+            fc.setB(array([b1]))
         F[n] = fc.gr.F()
         G[n] = fc.G2(setMSext=True)
         jX[n] = fc.gr.jX()
-        i2sum[n] = fc.gr.i2()
+        i5i2[n] = fc.gr.i5() / fc.gr.i2()
         maxM[n] = amax(absolute(fc.gr.mSext))
-    axA.plot(-b1range, G, label='G')
-    axA.plot(-b1range, maxM, label='max m')
-    axB.plot(-b1range, F, label='F')
-    axB.plot(-b1range, jX, label='jX')
-    axB.plot(-b1range, i2sum/100, label='i2sum/100(remove)')
+    F[jX <= 0] = NaN
+    G[jX <= 0] = NaN
 
+    axA.plot(-b1range, i5i2, label='$I_5 / I_2$', color='xkcd:mustard')
+    axA.plot(-b1range, jX, label='$J_x$', color='xkcd:olive')
+    axA.axhline(3, color='xkcd:olive', linewidth=0.5, linestyle='dotted')
+    axA.plot(-b1range, F, label='$F$', color='xkcd:royal blue')
+    axB.plot(-b1range, G, label='$G$', color='black')
+    axB.plot(-b1range, maxM, label='max $m$', color='xkcd:red')
 
+    for a in (axA, axB):    
+        a.set(xlim=(0,2.5), ylim=(0,10), xlabel='$b_1$')
 
 if __name__ == '__main__':
     from sys import argv
@@ -197,14 +210,14 @@ if __name__ == '__main__':
             saveFig(fig, filename)
 
         elif filename == "b1scan.pdf":
-            fig, ax = subplots(2, 2, figsize=(doubleWidth, 0.8*columnWidth), sharex=True, sharey='row')
-            b1scan(ax[0,0], ax[0,1], nuX=0.45)
-            b1scan(ax[1,0], ax[1,1], nuX=0.15)
+            fig, ax = subplots(2, 2, figsize=(doubleWidth, 1.5*columnWidth), sharex=True, sharey='row')
+            b1scan(ax[0,0], ax[1,0], nuX=0.45)
+            b1scan(ax[0,1], ax[1,1], nuX=0.15)
             for a in ax.flat:
                 [a.spines[dr].set_color(None) for dr in ('top', 'right')]
-                a.set_ylim((0,15))
+                a.label_outer()
                 a.legend()
-            saveFig(fig)  #, filename)
+            saveFig(fig, filename, tight=True)
 
         else:
             print("unrecognized filename")
