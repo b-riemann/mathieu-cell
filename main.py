@@ -1,10 +1,11 @@
 """Figure generator for Mathieu cells"""
 from matplotlib.pyplot import setp
 from numpy import arange, squeeze, array, empty_like, amax, absolute, NaN
-from scipy.optimize import minimize
+from scipy.optimize import minimize as minix, minimize_scalar as minix_scalar
 from tools import subplots, saveFig, centaur
 from floquetCell import FloquetKSpace
 from fourierCell import TuneMap, FourierCell
+from time import time
 import os
 
 
@@ -14,7 +15,10 @@ def generateMapIfNotExisting():
         tm.load()
     else:
         print("computing k values for tune map. this only needs to be done once.")
+        tic = time()
         tm.make()
+        toc = time()
+        print("elapsed time: %.1f sec." % (toc-tic))
     return tm
 
 
@@ -37,7 +41,7 @@ def plotJx(ax, tm, jX, grayMax=3.0):
 
 def obig(b2, b1, fc : FourierCell):
     fc.setB(array([b1,b2]))
-    return fc.G2()  # (fc.gr.jX()-2.5)**2 # fc.G2()
+    return fc.G()  # (fc.gr.jX()-2.5)**2
 
 def b1scan(axA, axB, nuX=0.45, nuY=0.35, minim=False):
     fc = FourierCell()
@@ -52,12 +56,13 @@ def b1scan(axA, axB, nuX=0.45, nuY=0.35, minim=False):
     maxM = empty_like(b1range)
     for n, b1 in enumerate(b1range):
         if minim:
-            result = minimize(obig, 0, args=(b1,fc))
+            # result = minix(obig, 0, args=(b1,fc))
+            result = minix_scalar(obig, bounds=(-2,2), args=(b1,fc))
             fc.setB(array([b1,result.x]))
         else:
             fc.setB(array([b1]))
         F[n] = fc.gr.F()
-        G[n] = fc.G2(setMSext=True)
+        G[n] = fc.G()
         jX[n] = fc.gr.jX()
         i5i2[n] = fc.gr.i5() / fc.gr.i2()
         maxM[n] = amax(absolute(fc.gr.mSext))
@@ -192,15 +197,15 @@ if __name__ == '__main__':
             tm = generateMapIfNotExisting()
             fig, ax = subplots(1, 4, figsize=(doubleWidth, 0.8*columnWidth), sharex=True, sharey=True)
             # print('subplot 0: b1')
-            # grayDiagram(ax[0], tm, tm.mapG2.b1, arange(-1.2, -0.1, 0.1), fmt='%.2f', grayDiv=2)
+            # grayDiagram(ax[0], tm, tm.mapG.b1, arange(-1.2, -0.1, 0.1), fmt='%.2f', grayDiv=2)
             print('subplot 0: G')
-            grayDiagram(ax[0], tm, tm.mapG2.fval, arange(6), fmt='%i', grayMax=2, grayDiv=10)
-            print('subplot 1: '+tm.mapG2.atNames[1])
-            plotF(ax[1], tm, tm.mapG2.atArray[:, :, 1])
-            print('subplot 2: '+tm.mapG2.atNames[0])
-            plotJx(ax[2], tm, tm.mapG2.atArray[:, :, 0])
-            print('subplot 3: '+tm.mapG2.atNames[2])
-            grayDiagram(ax[3], tm, 1e3*tm.mapG2.atArray[:, :, 2],
+            grayDiagram(ax[0], tm, tm.mapG.fval, arange(6), fmt='%i', grayMax=2, grayDiv=10)
+            print('subplot 1: '+tm.mapG.atNames[1])
+            plotF(ax[1], tm, tm.mapG.atArray[:, :, 1])
+            print('subplot 2: '+tm.mapG.atNames[0])
+            plotJx(ax[2], tm, tm.mapG.atArray[:, :, 0])
+            print('subplot 3: '+tm.mapG.atNames[2])
+            grayDiagram(ax[3], tm, 1e3*tm.mapG.atArray[:, :, 2],
 		arange(-100, 101, 25), fmt='%i', grayDiv=5, grayMax=25, grayMin=-25)
             # ax[0].set_xlim((0.2, 0.5))
             for a in ax:

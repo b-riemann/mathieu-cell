@@ -182,7 +182,7 @@ class FloquetSolve:
 
 class FourierCell:
     """contains functions that connect .gr and .fs or that are helper functions."""
-    def __init__(self):
+    def __init__(self, mSize=2):
         self.k = ones(2, float) / 2
         self.bNonZero = ones(2, float) / 2
 
@@ -193,6 +193,10 @@ class FourierCell:
         # this must be update when k.size changes:
         self._convertK = copy(self._convert[:,self.fs.P:(self.fs.P+self.k.size)].real)
         self._convertK[:,1:] *= 2  # k_0 + 2 k_1 cos + 2 k_2 cos...
+
+        self.mSize = mSize
+        self._convertM = copy(self._convert[:,self.fs.P:(self.fs.P+self.mSize)].real)
+        self._convertM[:,1:] *= 2  # m_0 + 2 m_1 cos + 2 m_2 cos...
 
         self.desiredTune = array([-1,-1], dtype=float)
         self._desiredC = array([-1,-1], dtype=float)
@@ -247,22 +251,28 @@ class FourierCell:
         return self.setKxy(res.x)
 
 
-    def sextuVals(self, setMSext=False):
+    def sextuVals(self):
         # compensate chroma by sextupole vector with 2 dof. only implemented for k.size=2
-        twoTimesTwo = self.gr._matrixB() @ self._convertK
-        try:
+        twoTimesTwo = self.gr._matrixB() @ self._convertM
+        if self.mSize==2:
             x = solve(twoTimesTwo,self.gr.naturalChroma())
-        except LinAlgError:
-            raise LinAlgError('k.size != 2?')
-        if setMSext:
-            self.gr.mSext[:] = self._convertK @ x
+        else:
+            raise LinAlgError('self.mSize != 2?')
+        self.gr.mSext[:] = self._convertM @ x
         return x
 
 
-    def G2(self, setMSext=False):
-        absM = absolute(self.sextuVals(setMSext))
-        maxM = absM[0] + 2*absM[1]
-        return self.gr.F() * maxM**(0.75)
+    def maxM(self):
+        # if self.mSize==2:
+        #     absM = absolute(self.sextuVals(setMSext))
+        #     return absM[0] + 2*absM[1]
+        # else:
+        #     # setMSext is always set, option ignored:
+        self.sextuVals()
+        return amax(absolute(self.gr.mSext))
+
+    def G(self):
+        return self.gr.F() * self.maxM()**(0.75)
 
     def __str__(self):
         return "FourierCell at k=%s. graphed F=%.2f, jX=%.2f" % (self.k.__str__(), self.gr.F(), self.gr.jX())
@@ -322,7 +332,7 @@ class TuneMap:
         self.chroma = copy(self.k)
 
         self.mapF = Map(shape, name='F', atNames=('jX', 'i5', 'momComp', 'm0', 'm1'))
-        self.mapG2 = Map(shape, name='G2', atNames=('jX', 'F', 'momComp', 'm0', 'm1'))
+        self.mapG = Map(shape, name='G', atNames=('jX', 'F', 'momComp', 'm0', 'm1'))
 
     def make(self):
         fc = FourierCell()
@@ -338,17 +348,16 @@ class TuneMap:
                 # - write newton search on Jx (start, end) first
                 self.mapF.write(q,p,*directSearch(fc, fc.gr.F))
                 self.mapF.atArray[q,p] = fc.gr.jX(), fc.gr.i5(), fc.gr.momComp(), *fc.sextuVals()
-                # print('G2')
-                self.mapG2.write(q,p,*directSearch(fc, fc.G2))
-                self.mapG2.atArray[q,p] = fc.gr.jX(), fc.gr.F(), fc.gr.momComp(), *fc.sextuVals()
+                self.mapG.write(q,p,*directSearch(fc, fc.G))
+                self.mapG.atArray[q,p] = fc.gr.jX(), fc.gr.F(), fc.gr.momComp(), *fc.sextuVals()
         pkl_dumpobj('F.pkl', self.mapF)
-        pkl_dumpobj('G2.pkl', self.mapG2)
+        pkl_dumpobj('G.pkl', self.mapG)
         savez('tunechroma.npz', tuneX=self.tuneX, tuneY=self.tuneY, k=self.k, chroma=self.chroma)
         print('saved TuneMap data')
 
     def load(self):
         self.mapF = pkl_loadobj('F.pkl')
-        self.mapG2 = pkl_loadobj('G2.pkl')
+        self.mapG = pkl_loadobj('G.pkl')
         x = np_load('tunechroma.npz')
         self.tuneX, self.tuneY, self.k, self.chroma = [x[key] for key in ('tuneX', 'tuneY', 'k', 'chroma')]
         print('loaded TuneMap data')
