@@ -66,6 +66,7 @@ def b1scan(axA, axB, nuX=0.45, nuY=0.35, minim=False):
         jX[n] = fc.gr.jX()
         i5i2[n] = fc.gr.i5() / fc.gr.i2()
         maxM[n] = amax(absolute(fc.gr.mSext))
+        # print('b1 = %.2f : chrom.nat.x=%.4f,y=%.4f, chrom.full.x=%.4f,y=%.4f' % (b1, *fc.gr.naturalChroma(), *fc.gr.fullChroma()))
     F[jX <= 0] = NaN
     G[jX <= 0] = NaN
 
@@ -216,8 +217,8 @@ if __name__ == '__main__':
 
         elif filename == "b1scan.pdf":
             fig, ax = subplots(2, 2, figsize=(doubleWidth, 1.5*columnWidth), sharex=True, sharey='row')
-            b1scan(ax[0,0], ax[1,0], nuX=0.45)
-            b1scan(ax[0,1], ax[1,1], nuX=0.15)
+            b1scan(ax[0,0], ax[1,0], nuX=0.15)
+            b1scan(ax[0,1], ax[1,1], nuX=0.45)
             for a in ax.flat:
                 [a.spines[dr].set_color(None) for dr in ('top', 'right')]
                 a.label_outer()
