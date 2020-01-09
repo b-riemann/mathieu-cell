@@ -91,7 +91,7 @@ if __name__ == '__main__':
 
 
     for filename in argv[1:]:
-        if filename == "islands.pdf":
+        if filename in ("islands.pdf","Islands.pdf"):
             print("overview of 3 stability islands in k0,k1 space")
             fig, ax = subplots(figsize=(columnWidth, 1.2 * columnWidth))
             fks = FloquetKSpace(arange(-1, 4.01, 0.05), arange(0, 8.01, 0.05))
@@ -101,11 +101,13 @@ if __name__ == '__main__':
             ax.set_xlim((-1, 4.01))
             fig.subplots_adjust(top=0.965, bottom=0.115, left=0.115, right=0.97)
 
-            print('truncate to k1 <= 4')
-            fig.set_size_inches(columnWidth, 0.75*columnWidth)
-            ax.set_ylim((0,4))
-            fig.subplots_adjust(top=0.969, bottom=0.177, left=0.127, right=0.968)
-
+            if filename[0]=='i':
+                print('truncate to k1 <= 4')
+                fig.set_size_inches(columnWidth, 0.75*columnWidth)
+                ax.set_ylim((0,4))
+                fig.subplots_adjust(top=0.969, bottom=0.177, left=0.127, right=0.968)
+            else:
+                fig.subplots_adjust(top=0.98, bottom=0.115, left=0.125, right=0.97)
             saveFig(fig, filename)
 
         elif filename == "necktie.pdf":
@@ -150,7 +152,7 @@ if __name__ == '__main__':
             fig.subplots_adjust(top=0.97, bottom=0.15, left=0.07, right=0.98, wspace=0.1)
             saveFig(fig, filename)
 
-        elif filename == "example.pdf":
+        elif filename in ("example.pdf", "Example.pdf"):
             fc = FourierCell()
             b1 = -1.11
             if False: # k vals from tunes
@@ -165,17 +167,24 @@ if __name__ == '__main__':
             print("F = %.4f, Jx = %.4f, xi_x = %.4f, xi_y = %.4f, alpha=%.6f" % 
               (fc.gr.F(),fc.gr.jX(),*fc.gr.naturalChroma(),fc.gr.momComp()))
 
-            fig, ax = subplots(figsize=(0.5*columnWidth,0.68*columnWidth))
+            fig, ax = subplots(figsize=\
+                (0.5*columnWidth,0.68*columnWidth) if filename[0]=='e' else (columnWidth, columnWidth))
+            
             ax.plot(2*fc.gr.sL, fc.gr.b, label='b(s)', linewidth=0.5)
             ax.plot(2*fc.gr.sL, fc.gr.k, label='k(s)', linewidth=0.5)
             ax.plot(2*fc.gr.sL, fc.gr.betaX, label=r'$\beta_x(s)$', color='xkcd:navy blue')
             ax.plot(2*fc.gr.sL, fc.gr.betaY, label=r'$\beta_y(s)$', color='0.5')
-            ax.plot(2*fc.gr.sL, fc.gr.eta, label=r'$\eta(s)$', color='red')
+            ax.plot(2*fc.gr.sL, fc.gr.eta,
+                label=r'$\eta(s)$' if filename[0]=='e' else r'$\tilde\eta(s)$', color='red')
             ax.set(xlim=(0,1), xlabel=r's / $2\pi$', ylim=(-2,17))
-            fig.subplots_adjust(top=0.999, bottom=0.19, left=0.164, right=0.941)
+            if filename[0]=='e':
+                fig.subplots_adjust(top=0.999, bottom=0.19, left=0.164, right=0.941)
+                ax.legend(prop={'size': 8})
+            else:
+                fig.subplots_adjust(top=0.99, bottom=0.13, left=0.13, right=0.96)
+                ax.legend(ncol=2)
             [ax.spines[dr].set_color(None) for dr in ('top', 'right')]
             ax.axhline(0, color='black', linestyle='dashed', linewidth=0.5)
-            ax.legend(prop={'size': 8})
             saveFig(fig, filename)
 
         elif filename == "sextuVals.pdf":
