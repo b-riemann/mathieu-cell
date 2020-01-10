@@ -166,25 +166,42 @@ if __name__ == '__main__':
             fc.setB(array([b1])) #[b1,1.3]))
             print("F = %.4f, Jx = %.4f, xi_x = %.4f, xi_y = %.4f, alpha=%.6f" % 
               (fc.gr.F(),fc.gr.jX(),*fc.gr.naturalChroma(),fc.gr.momComp()))
+            print("maxM = %.4f, G = %.4f" % (fc.maxM(), fc.G()))
 
-            fig, ax = subplots(figsize=\
-                (0.5*columnWidth,0.68*columnWidth) if filename[0]=='e' else (columnWidth, columnWidth))
-            
-            ax.plot(2*fc.gr.sL, fc.gr.b, label='b(s)', linewidth=0.5)
-            ax.plot(2*fc.gr.sL, fc.gr.k, label='k(s)', linewidth=0.5)
-            ax.plot(2*fc.gr.sL, fc.gr.betaX, label=r'$\beta_x(s)$', color='xkcd:navy blue')
-            ax.plot(2*fc.gr.sL, fc.gr.betaY, label=r'$\beta_y(s)$', color='0.5')
-            ax.plot(2*fc.gr.sL, fc.gr.eta,
-                label=r'$\eta(s)$' if filename[0]=='e' else r'$\tilde\eta(s)$', color='red')
-            ax.set(xlim=(0,1), xlabel=r's / $2\pi$', ylim=(-2,17))
+            if filename[0]=='e':
+                fig, ax = subplots(figsize=(0.5*columnWidth,0.68*columnWidth))
+                axA = ax
+                axB = ax
+                sVar = 's'
+                etaLabel = r'$\eta(s)$'
+                betaLabel = r'$\beta_%c(s)$'
+            else:
+                fig, (axA, axB) = subplots(2,1,figsize=(columnWidth, columnWidth), sharex=True)
+                sVar = 'u'
+                etaLabel = r'$\tilde\eta(u)$'
+                betaLabel = r'$\tilde\beta_%c(u)$'
+                
+            axA.plot(2*fc.gr.sL, fc.gr.betaX, label=betaLabel % 'x', color='xkcd:navy blue')
+            axA.plot(2*fc.gr.sL, fc.gr.betaY, label=betaLabel % 'y', color='0.5')
+            axA.plot(2*fc.gr.sL, fc.gr.eta, label=etaLabel, color='red')
+
+            axB.plot(2*fc.gr.sL, fc.gr.b, label='b(%c)' % sVar, linewidth=0.7)
+            axB.plot(2*fc.gr.sL, fc.gr.k, label='k(%c)' % sVar, linewidth=0.7)
+            axB.axhline(0, color='black', linestyle='dashed', linewidth=0.5)
+
+            axB.set(xlim=(0,1), xlabel=r'%c / $2\pi$' % sVar)
             if filename[0]=='e':
                 fig.subplots_adjust(top=0.999, bottom=0.19, left=0.164, right=0.941)
+                ax.set(ylim=(-2,17))
                 ax.legend(prop={'size': 8})
+                [ax.spines[dr].set_color(None) for dr in ('top', 'right')]
             else:
+                axB.plot(2*fc.gr.sL, fc.gr.mSext, label='m(s)', linewidth=0.7)
                 fig.subplots_adjust(top=0.99, bottom=0.13, left=0.13, right=0.96)
-                ax.legend(ncol=2)
-            [ax.spines[dr].set_color(None) for dr in ('top', 'right')]
-            ax.axhline(0, color='black', linestyle='dashed', linewidth=0.5)
+                axA.set(ylim=(0,17))
+                for a in (axA, axB):
+                    [a.spines[dr].set_color(None) for dr in ('top', 'right')]
+                    a.legend(ncol=2)
             saveFig(fig, filename)
 
         elif filename == "sextuVals.pdf":
