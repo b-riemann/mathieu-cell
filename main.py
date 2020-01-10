@@ -1,4 +1,5 @@
 """Figure generator for Mathieu cells"""
+from matplotlib import rc
 from matplotlib.pyplot import setp
 from numpy import arange, squeeze, array, empty_like, amax, absolute, NaN
 from scipy.optimize import minimize as minix, minimize_scalar as minix_scalar
@@ -8,6 +9,9 @@ from fourierCell import TuneMap, FourierCell
 from time import time
 import os
 
+#rc('text', usetex=True)
+rc('font', family='serif')
+# rc('contour', negative_linestyle='solid')
 
 def generateMapIfNotExisting():
     tm = TuneMap()  # b1Range=-arange(0, 1.5, 0.02)) # -arange(0, 1.5, 0.05)  # arange(0, 2, 0.1), arange(-1.4, 0.01, 0.05)
