@@ -2,12 +2,14 @@
 
 from warnings import warn
 
-from numpy import absolute, amax, arange, array, cos, copy, empty, exp, eye, zeros, sqrt as np_sqrt, savez, ones, outer, sin as np_sin, sum, mean, pi as np_pi, NaN, Inf, load as np_load
+from numpy import absolute, amax, arange, array, cos, copy, cross, empty, \
+                  exp, eye, zeros, sqrt as np_sqrt, savez, ones, outer, \
+                  sin as np_sin, sum, mean, pi as np_pi, NaN, Inf, load as np_load
 from scipy.linalg import det, svd
 from scipy.optimize import minimize
 from libc.math cimport sin, sinh, sqrt, pi, fabs, asin
-from numpy.linalg import solve, LinAlgError
-from scipy.optimize import minimize
+from numpy.linalg import solve, lstsq, LinAlgError
+from scipy.optimize import minimize, minimize_scalar
 from time import sleep
 from tools import absq
 from pickle import dump as pkl_dump, load as pkl_load, HIGHEST_PROTOCOL
@@ -253,11 +255,24 @@ class FourierCell:
 
     def sextuVals(self):
         # compensate chroma by sextupole vector with 2 dof. only implemented for k.size=2
-        twoTimesTwo = self.gr._matrixB() @ self._convertM
-        if self.mSize==2:
-            x = solve(twoTimesTwo,self.gr.naturalChroma())
+        mToChroma = self.gr._matrixB() @ self._convertM
+        # mToChroma.shape = (2, mSize)
+        if self.mSize==2: 
+            x = solve(mToChroma,self.gr.naturalChroma())
+        elif self.mSize==3:
+            x, _, _, _ = lstsq(mToChroma,self.gr.naturalChroma())
+            nullSpace = cross(mToChroma[0],mToChroma[1])
+ 
+            def obiSkalM(a):
+                y = (x + a*nullSpace)
+                self.gr.mSext[:] = self._convertM @ y
+                return amax(absolute(self.gr.mSext))
+
+            result = minimize_scalar(obiSkalM)
+            # print(result)
+            x += result.x*nullSpace
         else:
-            raise LinAlgError('self.mSize != 2?')
+            raise LinAlgError('self.mSize > 3 not implemented')
         self.gr.mSext[:] = self._convertM @ x
         return x
 
@@ -333,9 +348,13 @@ class TuneMap:
 
         self.mapF = Map(shape, name='F', atNames=('jX', 'i5', 'momComp', 'm0', 'm1'))
         self.mapG = Map(shape, name='G', atNames=('jX', 'F', 'momComp', 'm0', 'm1'))
+        self.mapH = Map(shape, name='H', atNames=('jX', 'F', 'momComp', 'm0', 'm1', 'm2'))
 
     def make(self):
         fc = FourierCell()
+        fcTri = FourierCell(mSize=3)
+
+
         qmax = self.tuneY.size
         for q, tuneY in enumerate(self.tuneY.flat):
             print('%3i / %3i' % (q,qmax), end='\r')
@@ -350,14 +369,21 @@ class TuneMap:
                 self.mapF.atArray[q,p] = fc.gr.jX(), fc.gr.i5(), fc.gr.momComp(), *fc.sextuVals()
                 self.mapG.write(q,p,*directSearch(fc, fc.G))
                 self.mapG.atArray[q,p] = fc.gr.jX(), fc.gr.F(), fc.gr.momComp(), *fc.sextuVals()
+
+                fcTri.setKx(fc.k)
+                self.mapH.write(q,p,*directSearch(fcTri, fcTri.G))
+                self.mapH.atArray[q,p] = fcTri.gr.jX(), fcTri.gr.F(), fcTri.gr.momComp(), *fcTri.sextuVals()
+
         pkl_dumpobj('F.pkl', self.mapF)
         pkl_dumpobj('G.pkl', self.mapG)
+        pkl_dumpobj('H.pkl', self.mapH)
         savez('tunechroma.npz', tuneX=self.tuneX, tuneY=self.tuneY, k=self.k, chroma=self.chroma)
         print('saved TuneMap data')
 
     def load(self):
         self.mapF = pkl_loadobj('F.pkl')
         self.mapG = pkl_loadobj('G.pkl')
+        self.mapH = pkl_loadobj('H.pkl')
         x = np_load('tunechroma.npz')
         self.tuneX, self.tuneY, self.k, self.chroma = [x[key] for key in ('tuneX', 'tuneY', 'k', 'chroma')]
         print('loaded TuneMap data')

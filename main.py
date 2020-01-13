@@ -9,7 +9,7 @@ from fourierCell import TuneMap, FourierCell
 from time import time
 import os
 
-rc('text', usetex=True)
+# rc('text', usetex=True)
 rc('font', family='serif')
 # rc('contour', negative_linestyle='solid')
 
@@ -49,7 +49,7 @@ def plotMultipoles(ax, fc : FourierCell, sVar='s', sextupoles=False):
     ax.plot(2*fc.gr.sL, fc.gr.b, label='$b(%c)$' % sVar, linewidth=0.7)
     ax.plot(2*fc.gr.sL, fc.gr.k, label='$k(%c)$' % sVar, linewidth=0.7)
     if sextupoles:
-        axB.plot(2*fc.gr.sL, fc.gr.mSext, label='$m(%c)$' % sVar, linewidth=0.7)
+        ax.plot(2*fc.gr.sL, fc.gr.mSext, label='$m(%c)$' % sVar, linewidth=0.7)
     ax.axhline(0, color='black', linestyle='dashed', linewidth=0.5)
     ax.set(xlim=(0,1), xlabel=r'%c / $2\pi$' % sVar)
 
@@ -212,6 +212,8 @@ if __name__ == '__main__':
                 for a in (ax, axB):
                     [a.spines[dr].set_color(None) for dr in ('top', 'right')]
                     a.legend(ncol=2)
+
+            print("nat. chroma %.4f %.4f, full chroma %.1e %.1e" % (*fc.gr.naturalChroma(), *fc.gr.fullChroma()))
             saveFig(fig, filename)
 
         elif filename == "sextuVals.pdf":
@@ -262,12 +264,40 @@ if __name__ == '__main__':
             saveFig(fig, filename, tight=True)
 
         elif filename == "extendedExample.pdf":
-            fig, ax = subplots(figsize=(columnWidth,columnWidth))
             fc = FourierCell(mSize=3)
-            fc.tuneTo(0.45,0.35)
-            fc.setB()
+            b1 = -1.11
+            
+            tunes = fc.tuneTo(0.45, 0.35)
+            fc.setB(array([b1]))
             fc.sextuVals()
-            plotMagnetStrengths
+
+            fig, ax = subplots(figsize=(columnWidth,columnWidth))
+            plotMultipoles(ax, fc, 'u', sextupoles=True)
+            print("nat. chroma %.4f %.4f, full chroma %.1e %.1e" % (*fc.gr.naturalChroma(), *fc.gr.fullChroma()))
+            ax.legend()
+            saveFig(fig, filename, tight=True)
+
+        elif filename == "H.pdf":
+            print("some figures of merit for H-optimized cells (excluding sextupole strengths)")
+            tm = generateMapIfNotExisting()
+            fig, ax = subplots(1, 4, figsize=(doubleWidth, 0.8*columnWidth), sharex=True, sharey=True)
+            # print('subplot 0: b1')
+            # grayDiagram(ax[0], tm, tm.mapH.b1, arange(-1.2, -0.1, 0.1), fmt='%.2f', grayDiv=2)
+            print('subplot 0: G')
+            grayDiagram(ax[0], tm, tm.mapH.fval, arange(6), fmt='%i', grayMax=2, grayDiv=10)
+            print('subplot 1: '+tm.mapH.atNames[1])
+            plotF(ax[1], tm, tm.mapH.atArray[:, :, 1])
+            print('subplot 2: '+tm.mapH.atNames[0])
+            plotJx(ax[2], tm, tm.mapH.atArray[:, :, 0])
+            print('subplot 3: '+tm.mapH.atNames[2])
+            grayDiagram(ax[3], tm, 1e3*tm.mapH.atArray[:, :, 2],
+		arange(-100, 101, 25), fmt='%i', grayDiv=5, grayMax=25, grayMin=-25)
+            # ax[0].set_xlim((0.2, 0.5))
+            for a in ax:
+                setp(a.get_xticklabels()[0], visible=False)
+
+            fig.subplots_adjust(top=0.97, bottom=0.15, left=0.07, right=0.98, wspace=0.1)
+            saveFig(fig, filename)
 
         else:
             print("unrecognized filename")
