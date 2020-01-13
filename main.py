@@ -61,7 +61,9 @@ def obig(b2, b1, fc : FourierCell):
 
 def b1scan(axA, axB, nuX=0.45, nuY=0.35, minim=False):
     fc = FourierCell()
+    fcTri = FourierCell(mSize=3)
     tunes = fc.tuneTo(nuX, nuY)
+    fcTri.setKx(fc.k)
     # tunes = fc.tuneTo(0.15, 0.35)
     print("k_0 = %.5f, k_1 = %.5f" % tuple(fc.k))
     b1range = -arange(0,2.5,0.02)
@@ -70,18 +72,24 @@ def b1scan(axA, axB, nuX=0.45, nuY=0.35, minim=False):
     i5i2 = empty_like(b1range)
     G = empty_like(b1range)
     maxM = empty_like(b1range)
+    Gtri = empty_like(b1range)
+    maxMtri = empty_like(b1range)
     for n, b1 in enumerate(b1range):
         if minim:
             # result = minix(obig, 0, args=(b1,fc))
             result = minix_scalar(obig, bounds=(-2,2), args=(b1,fc))
             fc.setB(array([b1,result.x]))
+            fcTri.setB(array([b1,result.x]))
         else:
             fc.setB(array([b1]))
+            fcTri.setB(array([b1]))
         F[n] = fc.gr.F()
         G[n] = fc.G()
         jX[n] = fc.gr.jX()
         i5i2[n] = fc.gr.i5() / fc.gr.i2()
         maxM[n] = amax(absolute(fc.gr.mSext))
+        Gtri[n] = fcTri.G()
+        maxMtri[n] = amax(absolute(fcTri.gr.mSext))
         # print('b1 = %.2f : chrom.nat.x=%.4f,y=%.4f, chrom.full.x=%.4f,y=%.4f' % (b1, *fc.gr.naturalChroma(), *fc.gr.fullChroma()))
     F[jX <= 0] = NaN
     G[jX <= 0] = NaN
@@ -91,7 +99,9 @@ def b1scan(axA, axB, nuX=0.45, nuY=0.35, minim=False):
     axA.axhline(3, color='xkcd:olive', linewidth=0.5, linestyle='dotted')
     axA.plot(-b1range, F, label='$F$', color='xkcd:royal blue')
     axB.plot(-b1range, G, label='$G$', color='black')
+    axB.plot(-b1range, Gtri, label='$G_{tri}$', color='magenta')
     axB.plot(-b1range, maxM, label='max $m$', color='xkcd:red')
+    axB.plot(-b1range, maxMtri, label='max $m_{tri}$', color='xkcd:maroon')
 
     for a in (axA, axB):    
         a.set(xlim=(0,2.5), ylim=(0,10), xlabel='$b_1$')
