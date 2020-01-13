@@ -93,6 +93,7 @@ def b1scan(axA, axB, nuX=0.45, nuY=0.35, minim=False):
         # print('b1 = %.2f : chrom.nat.x=%.4f,y=%.4f, chrom.full.x=%.4f,y=%.4f' % (b1, *fc.gr.naturalChroma(), *fc.gr.fullChroma()))
     F[jX <= 0] = NaN
     G[jX <= 0] = NaN
+    Gtri[jX <= 0] = NaN
 
     axA.plot(-b1range, i5i2, label='$I_5 / I_2$', color='xkcd:mustard')
     axA.plot(-b1range, jX, label='$J_x$', color='xkcd:olive')
