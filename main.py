@@ -9,7 +9,7 @@ from fourierCell import TuneMap, FourierCell
 from time import time
 import os
 
-#rc('text', usetex=True)
+rc('text', usetex=True)
 rc('font', family='serif')
 # rc('contour', negative_linestyle='solid')
 
@@ -39,13 +39,25 @@ def plotF(ax, tm, F):
     grayDiagram(ax, tm, F, arange(6), fmt='%i', grayMax=2, grayDiv=10,
                 faceLims=((0.0, 1.0),), faceColors=('#ffffcc',))
 
-def plotJx(ax, tm, jX, grayMax=3.0):
+
+def plotJx(ax, tm : TuneMap, jX, grayMax=3.0):
     grayDiagram(ax, tm, jX, arange(0, 3.1, 0.5), fmt='%.1f', grayMax=grayMax,
                 faceLims=((-10, 0), (3, 100)), faceColors=('#cccccc', '#cccccc'))
+
+
+def plotMultipoles(ax, fc : FourierCell, sVar='s', sextupoles=False):
+    ax.plot(2*fc.gr.sL, fc.gr.b, label='$b(%c)$' % sVar, linewidth=0.7)
+    ax.plot(2*fc.gr.sL, fc.gr.k, label='$k(%c)$' % sVar, linewidth=0.7)
+    if sextupoles:
+        axB.plot(2*fc.gr.sL, fc.gr.mSext, label='$m(%c)$' % sVar, linewidth=0.7)
+    ax.axhline(0, color='black', linestyle='dashed', linewidth=0.5)
+    ax.set(xlim=(0,1), xlabel=r'%c / $2\pi$' % sVar)
+
 
 def obig(b2, b1, fc : FourierCell):
     fc.setB(array([b1,b2]))
     return fc.G()  # (fc.gr.jX()-2.5)**2
+
 
 def b1scan(axA, axB, nuX=0.45, nuY=0.35, minim=False):
     fc = FourierCell()
@@ -174,36 +186,30 @@ if __name__ == '__main__':
 
             if filename[0]=='e':
                 fig, ax = subplots(figsize=(0.5*columnWidth,0.68*columnWidth))
-                axA = ax
-                axB = ax
                 sVar = 's'
+                plotMultipoles(ax, fc, sVar=sVar)
                 etaLabel = r'$\eta(s)$'
                 betaLabel = r'$\beta_%c(s)$'
             else:
-                fig, (axA, axB) = subplots(2,1,figsize=(columnWidth, columnWidth), sharex=True)
+                fig, (ax, axB) = subplots(2,1,figsize=(columnWidth, columnWidth), sharex=True)
                 sVar = 'u'
+                plotMultipoles(axB, fc, sVar=sVar, sextupoles=True)
                 etaLabel = r'$\tilde\eta(u)$'
                 betaLabel = r'$\tilde\beta_%c(u)$'
                 
-            axA.plot(2*fc.gr.sL, fc.gr.betaX, label=betaLabel % 'x', color='xkcd:navy blue')
-            axA.plot(2*fc.gr.sL, fc.gr.betaY, label=betaLabel % 'y', color='0.5')
-            axA.plot(2*fc.gr.sL, fc.gr.eta, label=etaLabel, color='red')
+            ax.plot(2*fc.gr.sL, fc.gr.betaX, label=betaLabel % 'x', color='xkcd:navy blue')
+            ax.plot(2*fc.gr.sL, fc.gr.betaY, label=betaLabel % 'y', color='0.5')
+            ax.plot(2*fc.gr.sL, fc.gr.eta, label=etaLabel, color='red')
 
-            axB.plot(2*fc.gr.sL, fc.gr.b, label='b(%c)' % sVar, linewidth=0.7)
-            axB.plot(2*fc.gr.sL, fc.gr.k, label='k(%c)' % sVar, linewidth=0.7)
-            axB.axhline(0, color='black', linestyle='dashed', linewidth=0.5)
-
-            axB.set(xlim=(0,1), xlabel=r'%c / $2\pi$' % sVar)
             if filename[0]=='e':
                 fig.subplots_adjust(top=0.999, bottom=0.19, left=0.164, right=0.941)
                 ax.set(ylim=(-2,17))
                 ax.legend(prop={'size': 8})
                 [ax.spines[dr].set_color(None) for dr in ('top', 'right')]
             else:
-                axB.plot(2*fc.gr.sL, fc.gr.mSext, label='m(s)', linewidth=0.7)
-                fig.subplots_adjust(top=0.99, bottom=0.13, left=0.13, right=0.96)
-                axA.set(ylim=(0,17))
-                for a in (axA, axB):
+                fig.subplots_adjust(top=0.99, bottom=0.13, left=0.1, right=0.96)
+                ax.set(ylim=(0,17))
+                for a in (ax, axB):
                     [a.spines[dr].set_color(None) for dr in ('top', 'right')]
                     a.legend(ncol=2)
             saveFig(fig, filename)
@@ -254,6 +260,14 @@ if __name__ == '__main__':
                 a.label_outer()
                 a.legend()
             saveFig(fig, filename, tight=True)
+
+        elif filename == "extendedExample.pdf":
+            fig, ax = subplots(figsize=(columnWidth,columnWidth))
+            fc = FourierCell(mSize=3)
+            fc.tuneTo(0.45,0.35)
+            fc.setB()
+            fc.sextuVals()
+            plotMagnetStrengths
 
         else:
             print("unrecognized filename")
