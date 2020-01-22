@@ -370,7 +370,7 @@ class TuneMap:
 
                 fcTri.setKx(fc.k)
                 self.mapH.write(q,p,*directSearch(fcTri, fcTri.G))
-                self.mapH.atArray[q,p] = fcTri.gr.jX(), fcTri.gr.F(), fcTri.gr.momComp(), *fcTri.sextuVals()
+                self.mapH.atArray[q,p] = fcTri.gr.jX(), fcTri.gr.F(), fcTri.gr.i1(), *fcTri.sextuVals()
 
         pkl_dumpobj('F.pkl', self.mapF)
         pkl_dumpobj('G.pkl', self.mapG)

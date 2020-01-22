@@ -140,21 +140,6 @@ class Grapher:
         self.bSq[:] = self.b ** 2
         self.bCub[:] = self.bSq * absolute(self.b)
 
-    def i2(self):
-        return sum(self.bSq)
-
-    def i3(self):
-        return sum(self.bCub)
-
-    def i45(self):
-        # these are sums not means
-        return (2*sum(self.eta * self.b * self.k),
-               sum(self.bCub * (self.gammaX * self.eta**2 + 2 * self.alphaX * self.eta * self.etaPrime
-                                + self.betaX * self.etaPrime ** 2)))
-
-    def momComp(self):
-        return mean(self.eta * self.b)
-
     def chroma(self):
         chromaX = - mean(self.k * self.betaX) / 4
         chromaY = mean(self.k * self.betaY) / 4
@@ -169,12 +154,6 @@ class Grapher:
         m0 = -pre*(A_11*chromaX + A_01*chromaY)
         m1 = pre*(A_00*chromaY + A_10*chromaX)
         return m0, m1
-
-    def solveM(self):
-        pass
-
-cdef (double, double) _sfjx(double i2, double i4, double i5):
-    return i5/(i2-i4), 1 - i4/i2
 
 
 class OptFloquetCell(SimpleFloquetCell):
@@ -212,23 +191,3 @@ class OptFloquetCell(SimpleFloquetCell):
         chromaX, chromaY = self.grapher.chroma()
         m0, m1 = self.grapher.compensateM01(chromaX, chromaY)
         return tuneX, tuneY, i2, i4r, i5, m0, m1 #, sextupole & chromaticity quantities
-
-    # def scaledF(self, x):
-    #     tuneX, tuneY, i2Sum, i4rSum, i5Sum, m0, m1 = self.scalarSolve(x[:self.kDim], b_nonzero)
-    #     sf, jx = _sfjx(i2Sum,i4rSum,i5Sum)
-    #     if jx<0:
-    #         sf = 1000.0
-    #     print('k0=%.3f,k1=%.3f,b1=%.3f. tX=%.3f,tY=%.3f. F=%.2f,Jx=%.2f.' % (*x, tuneX, tuneY, sf/I5I2tme,jx))
-    #     return sf
-
-    def scaledG(self, x):
-        # build objective function. input: m_subspace -> map onto (plane & then s space) -> get m_wedge
-        tuneX, tuneY, i2Sum, i4rSum, i5Sum, m0, m1 = self.scalarSolve(x[:self.kDim], x[self.kDim:])
-        g, jx = _sfjx(i2Sum,i4rSum,i5Sum)
-            # solve the m_wedge optimization problem
-        mWedge = absolute(m0)+2*absolute(m1)
-        g *= mWedge**0.75
-        if tuneY < 0.05 or jx<0:
-            g = 1000.0
-            print('k0=%.3f,k1=%.3f,b1=%.3f. tX=%.3f,tY=%.3f. G=%.2f,Jx=%.2f.' % (*x, tuneX, tuneY, g/I5I2tme,jx))
-        return g

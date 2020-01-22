@@ -105,7 +105,7 @@ def b1scan(axA, axB, nuX=0.45, nuY=0.35, minim=False):
     axB.plot(-b1range, maxMtri, label='max $m_{tri}$', color='xkcd:maroon')
 
     for a in (axA, axB):    
-        a.set(xlim=(0,2.5), ylim=(0,10), xlabel='$b_1$')
+        a.set(xlim=(0,2.5), ylim=(0,9), xlabel='$b_1$')
 
 if __name__ == '__main__':
     from sys import argv
@@ -168,10 +168,10 @@ if __name__ == '__main__':
             print('subplot 2: '+tm.mapF.atNames[0])
             plotJx(ax[2], tm, tm.mapF.atArray[:, :, 0])
             print('subplot 3: '+tm.mapF.atNames[2])
-            grayDiagram(ax[3], tm, 1e3*tm.mapF.atArray[:, :, 2], # (-0.1, -1e-2, -1e-3, -1e-4, 1e-4, 1e-3, 1e-2, 0.1), fmt='%.1e', 
-		arange(-100, 101, 25), fmt='%i',
-                        faceLims=((-5, 5),), faceColors=('#ffcccc',),
-                        grayDiv=5, grayMax=25, grayMin=-25)
+            grayDiagram(ax[3], tm, tm.mapF.atArray[:, :, 2], # (-0.1, -1e-2, -1e-3, -1e-4, 1e-4, 1e-3, 1e-2, 0.1), fmt='%.1e', 
+		arange(-1, 1.1, 0.25), fmt='%.2f',
+                        faceLims=((-0.05, 0.05),), faceColors=('#ffcccc',),
+                        grayDiv=5, grayMax=0.25, grayMin=-0.25)
             ax[0].set_xlim((0.2, 0.5))
             for a in ax:
                 setp(a.get_xticklabels()[0], visible=False)
@@ -192,7 +192,7 @@ if __name__ == '__main__':
             print("nu_x = %.8f, nu_y=%.8f" % tunes)
             fc.setB(array([b1])) #[b1,1.3]))
             print("F = %.4f, Jx = %.4f, xi_x = %.4f, xi_y = %.4f, alpha=%.6f" % 
-              (fc.gr.F(),fc.gr.jX(),*fc.gr.naturalChroma(),fc.gr.momComp()))
+              (fc.gr.F(),fc.gr.jX(),*fc.gr.naturalChroma(),fc.gr.i1()))
             print("maxM = %.4f, G = %.4f" % (fc.maxM(), fc.G()))
 
             if filename[0]=='e':
@@ -255,8 +255,8 @@ if __name__ == '__main__':
             print('subplot 2: '+tm.mapG.atNames[0])
             plotJx(ax[2], tm, tm.mapG.atArray[:, :, 0])
             print('subplot 3: '+tm.mapG.atNames[2])
-            grayDiagram(ax[3], tm, 1e3*tm.mapG.atArray[:, :, 2],
-		arange(-100, 101, 25), fmt='%i', grayDiv=5, grayMax=25, grayMin=-25)
+            grayDiagram(ax[3], tm, tm.mapG.atArray[:, :, 2],
+		arange(-1, 1.1, 0.25), fmt='%.2f', grayDiv=5, grayMax=0.25, grayMin=-0.25)
             # ax[0].set_xlim((0.2, 0.5))
             for a in ax:
                 setp(a.get_xticklabels()[0], visible=False)
@@ -265,7 +265,7 @@ if __name__ == '__main__':
             saveFig(fig, filename)
 
         elif filename == "b1scan.pdf":
-            fig, ax = subplots(2, 2, figsize=(doubleWidth, 1.5*columnWidth), sharex=True, sharey='row')
+            fig, ax = subplots(2, 2, figsize=(doubleWidth, 1.4*columnWidth), sharex=True, sharey='row')
             b1scan(ax[0,0], ax[1,0], nuX=0.15)
             b1scan(ax[0,1], ax[1,1], nuX=0.45)
             for a in ax.flat:
@@ -301,8 +301,8 @@ if __name__ == '__main__':
             print('subplot 2: '+tm.mapH.atNames[0])
             plotJx(ax[2], tm, tm.mapH.atArray[:, :, 0])
             print('subplot 3: '+tm.mapH.atNames[2])
-            grayDiagram(ax[3], tm, 1e3*tm.mapH.atArray[:, :, 2],
-		arange(-100, 101, 25), fmt='%i', grayDiv=5, grayMax=25, grayMin=-25)
+            grayDiagram(ax[3], tm, tm.mapH.atArray[:, :, 2],
+		arange(-1, 1.1, 0.25), fmt='%.2f', grayDiv=5, grayMax=0.25, grayMin=-0.25)
             # ax[0].set_xlim((0.2, 0.5))
             for a in ax:
                 setp(a.get_xticklabels()[0], visible=False)
