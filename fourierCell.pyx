@@ -352,7 +352,6 @@ class TuneMap:
         fc = FourierCell()
         fcTri = FourierCell(mSize=3)
 
-
         qmax = self.tuneY.size
         for q, tuneY in enumerate(self.tuneY.flat):
             print('%3i / %3i' % (q,qmax), end='\r')

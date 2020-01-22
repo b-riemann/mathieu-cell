@@ -70,6 +70,7 @@ def b1scan(axA, axB, nuX=0.45, nuY=0.35, minim=False):
     F = empty_like(b1range)
     jX = empty_like(b1range)
     i5i2 = empty_like(b1range)
+    i1 = empty_like(b1range)
     G = empty_like(b1range)
     maxM = empty_like(b1range)
     Gtri = empty_like(b1range)
@@ -87,6 +88,7 @@ def b1scan(axA, axB, nuX=0.45, nuY=0.35, minim=False):
         G[n] = fc.G()
         jX[n] = fc.gr.jX()
         i5i2[n] = fc.gr.i5sum() / fc.gr.i2sum()
+        i1[n] = fc.gr.i1()
         maxM[n] = amax(absolute(fc.gr.mSext))
         Gtri[n] = fcTri.G()
         maxMtri[n] = amax(absolute(fcTri.gr.mSext))
@@ -95,17 +97,20 @@ def b1scan(axA, axB, nuX=0.45, nuY=0.35, minim=False):
     G[jX <= 0] = NaN
     Gtri[jX <= 0] = NaN
 
-    axA.plot(-b1range, i5i2, label='$I_5 / I_2$', color='xkcd:mustard')
-    axA.plot(-b1range, jX, label='$J_x$', color='xkcd:olive')
+    axA.plot(-b1range, i5i2, label='$I_5 / I_2$', linewidth=0.7, color='xkcd:mustard')
+    axA.plot(-b1range, i1, label='$I_1$', linewidth=0.7, color='xkcd:puke')
+    axA.plot(-b1range, jX, label='$J_x$', linewidth=0.7, color='xkcd:olive')
     axA.axhline(3, color='xkcd:olive', linewidth=0.5, linestyle='dotted')
-    axA.plot(-b1range, F, label='$F$', color='xkcd:royal blue')
-    axB.plot(-b1range, G, label='$G$', color='black')
-    axB.plot(-b1range, Gtri, label='$G_{tri}$', color='magenta')
-    axB.plot(-b1range, maxM, label='max $m$', color='xkcd:red')
-    axB.plot(-b1range, maxMtri, label='max $m_{tri}$', color='xkcd:maroon')
+    axA.plot(-b1range, F, label='$F$', linewidth=0.7, color='xkcd:royal blue')
+    axB.plot(-b1range, G, label='$G$', linewidth=0.7, color='black')
+    axB.plot(-b1range, Gtri, label='$G_{tri}$', linewidth=0.7, color='magenta')
+    axB.plot(-b1range, maxM, label='max $m$', linewidth=0.7, color='xkcd:red')
+    axB.plot(-b1range, maxMtri, label='max $m_{tri}$', linewidth=0.7, color='xkcd:maroon')
 
     for a in (axA, axB):    
         a.set(xlim=(0,2.5), ylim=(0,9), xlabel='$b_1$')
+
+exampleA = (0.45,0.35)
 
 if __name__ == '__main__':
     from sys import argv
@@ -183,7 +188,7 @@ if __name__ == '__main__':
             fc = FourierCell()
             b1 = -1.11
             if False: # k vals from tunes
-                tunes = fc.tuneTo(0.45, 0.35)
+                tunes = fc.tuneTo(*exampleA)
                 k = fc.k
             else: # tunes from k vals
                 k = array([0.04801, 0.85536])
@@ -191,9 +196,9 @@ if __name__ == '__main__':
             print("k_0 = %.5f, k_1 = %.5f, b1 = %.4f" % (*fc.k, b1))
             print("nu_x = %.8f, nu_y=%.8f" % tunes)
             fc.setB(array([b1])) #[b1,1.3]))
-            print("F = %.4f, Jx = %.4f, xi_x = %.4f, xi_y = %.4f, alpha=%.6f" % 
+            print("F = %.4f, Jx = %.4f, xi_x = %.4f, xi_y = %.4f, I1=%.6f" % 
               (fc.gr.F(),fc.gr.jX(),*fc.gr.naturalChroma(),fc.gr.i1()))
-            print("maxM = %.4f, G = %.4f" % (fc.maxM(), fc.G()))
+            print("m0=%.4f, m1=%.4f, G = %.4f" % (*fc.sextuVals(), fc.G()))
 
             if filename[0]=='e':
                 fig, ax = subplots(figsize=(0.5*columnWidth,0.68*columnWidth))
