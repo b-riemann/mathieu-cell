@@ -59,14 +59,13 @@ def obig(b2, b1, fc : FourierCell):
     return fc.G()  # (fc.gr.jX()-2.5)**2
 
 
-def b1scan(axA, axB, nuX=0.45, nuY=0.35, minim=False):
+def b1scan(axA, axB, nuX=0.45, nuY=0.35, minim=False, b1range=-arange(0,2.5,0.02)):
     fc = FourierCell()
     fcTri = FourierCell(mSize=3)
     tunes = fc.tuneTo(nuX, nuY)
     fcTri.setKx(fc.k)
     # tunes = fc.tuneTo(0.15, 0.35)
     print("k_0 = %.5f, k_1 = %.5f" % tuple(fc.k))
-    b1range = -arange(0,2.5,0.02)
     F = empty_like(b1range)
     jX = empty_like(b1range)
     i5i2 = empty_like(b1range)
@@ -279,8 +278,9 @@ if __name__ == '__main__':
             fih, ah = subplots(figsize=(columnWidth,0.7*columnWidth))
             if filename.startswith("b1scanA"):
                 chara = 'A'
-                b1scan(ag, ah, *exampleA)
+                b1scan(ag, ah, *exampleA) #, b1range=-arange(0.9,1.3,0.01))
                 ag.axvline(1.11, color='black', linewidth=0.5, linestyle='dotted')
+                # ag.set(xlim=(0.9,1.3),ylim=(-1,15))
             else:
                 chara = 'B'
                 b1scan(ag, ah, *exampleB)
