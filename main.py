@@ -97,20 +97,25 @@ def b1scan(axA, axB, nuX=0.45, nuY=0.35, minim=False):
     G[jX <= 0] = NaN
     Gtri[jX <= 0] = NaN
 
-    axA.plot(-b1range, i5i2, label='$I_5 / I_2$', linewidth=0.7, color='xkcd:mustard')
-    axA.plot(-b1range, i1, label='$I_1$', linewidth=0.7, color='xkcd:puke')
+    # axA.plot(-b1range, i5i2, label='$I_5 / I_2$', linewidth=0.7, color='xkcd:mustard')
+    axA.plot(-b1range, i1, label='$I_1$', linewidth=0.7, color='xkcd:mustard')
     axA.plot(-b1range, jX, label='$J_x$', linewidth=0.7, color='xkcd:olive')
-    axA.axhline(3, color='xkcd:olive', linewidth=0.5, linestyle='dotted')
+    axA.axhline(3, color='black', linewidth=0.5, linestyle='dotted')
+    axA.axhline(0, color='black', linewidth=0.5, linestyle='dotted')
     axA.plot(-b1range, F, label='$F$', linewidth=0.7, color='xkcd:royal blue')
-    axB.plot(-b1range, G, label='$G$', linewidth=0.7, color='black')
+    axB.plot(-b1range, G, label='$G$', linewidth=0.7, color='C1')
     axB.plot(-b1range, Gtri, label='$G_{tri}$', linewidth=0.7, color='magenta')
     axB.plot(-b1range, maxM, label='max $m$', linewidth=0.7, color='xkcd:red')
     axB.plot(-b1range, maxMtri, label='max $m_{tri}$', linewidth=0.7, color='xkcd:maroon')
 
+    axA.set(xlim=(0,2.5), ylim=(-1,9.5), xlabel='$b_1$')
+    axB.set(xlim=(0,2.5), ylim=(0,8.5), xlabel='$b_1$')
     for a in (axA, axB):    
-        a.set(xlim=(0,2.5), ylim=(0,9), xlabel='$b_1$')
+        [a.spines[dr].set_color(None) for dr in ('top', 'right')]
+    axB.legend()
 
 exampleA = (0.45,0.35)
+exampleB = (0.15,0.35)
 
 if __name__ == '__main__':
     from sys import argv
@@ -269,16 +274,21 @@ if __name__ == '__main__':
             fig.subplots_adjust(top=0.97, bottom=0.15, left=0.07, right=0.98, wspace=0.1)
             saveFig(fig, filename)
 
-        elif filename == "b1scan.pdf":
-            fig, ax = subplots(2, 2, figsize=(doubleWidth, 1.4*columnWidth), sharex=True, sharey='row')
-            b1scan(ax[0,0], ax[1,0], nuX=0.15)
-            b1scan(ax[0,1], ax[1,1], nuX=0.45)
-            for a in ax.flat:
-                [a.spines[dr].set_color(None) for dr in ('top', 'right')]
-                a.label_outer()
-                a.legend()
-            saveFig(fig, filename, tight=True)
-
+        elif filename.startswith("b1scan"):
+            fig, ag = subplots(figsize=(columnWidth,0.7*columnWidth))
+            fih, ah = subplots(figsize=(columnWidth,0.7*columnWidth))
+            if filename.startswith("b1scanA"):
+                chara = 'A'
+                b1scan(ag, ah, *exampleA)
+                ag.axvline(1.11, color='black', linewidth=0.5, linestyle='dotted')
+            else:
+                chara = 'B'
+                b1scan(ag, ah, *exampleB)
+            fig.subplots_adjust(top=0.96, bottom=0.19, left=0.07, right=0.96)
+            saveFig(fig, "b1scan%c-int.pdf" % chara)
+            fih.subplots_adjust(top=0.96, bottom=0.19, left=0.07, right=0.96)
+            saveFig(fih, "b1scan%c-mG.pdf" % chara)
+            
         elif filename == "extendedExample.pdf":
             fc = FourierCell(mSize=3)
             b1 = -1.11
