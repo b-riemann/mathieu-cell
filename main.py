@@ -86,7 +86,7 @@ def b1scan(axA, axB, nuX=0.45, nuY=0.35, minim=False):
         F[n] = fc.gr.F()
         G[n] = fc.G()
         jX[n] = fc.gr.jX()
-        i5i2[n] = fc.gr.i5() / fc.gr.i2()
+        i5i2[n] = fc.gr.i5sum() / fc.gr.i2sum()
         maxM[n] = amax(absolute(fc.gr.mSext))
         Gtri[n] = fcTri.G()
         maxMtri[n] = amax(absolute(fcTri.gr.mSext))

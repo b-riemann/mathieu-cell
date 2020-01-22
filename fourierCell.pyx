@@ -43,35 +43,33 @@ class Grapher:
         self.bSq = b ** 2
         self.bCub = self.bSq * absolute(self.b)
 
-    def i2(self):
+    def i2sum(self):
         # these are sums not means, use only for fractions of i2, i4, i5
         return sum(self.bSq)
 
-    def i3(self):
-        # these are sums not means, use only for fractions of i2, i4, i5
+    def i3sum(self):
         return sum(self.bCub)
 
-    def i4(self):
-        # these are sums not means, use only for fractions of i2, i4, i5
+    def i4sum(self):
         return 2*sum(self.eta * self.b * self.k)
 
-    def i5(self):
-        # these are sums not means, use only for fractions of i2, i4, i5
+    def i5sum(self):
         return sum(self.bCub * (self.gammaX * self.eta**2 + 2 * self.alphaX * self.eta * self.etaPrime
                                 + self.betaX * self.etaPrime ** 2))
 
-    def momComp(self):
-        return mean(self.b * self.eta) * (2/pi)**2
+    def i1(self):
+        # actual integral
+        return mean(self.b * self.eta) * pi
 
     def F(self):
-        i2 = self.i2()
-        i4 = self.i4()
+        i2 = self.i2sum()
+        i4 = self.i4sum()
         # if absolute(i4) > i2:
         #     return Inf
-        return self.i5() / (i2 - i4) / I5I2tme
+        return self.i5sum() / (i2 - i4) / I5I2tme
 
     def jX(self):
-        return 1 - self.i4() / self.i2()
+        return 1 - self.i4sum() / self.i2sum()
 
     def naturalChroma(self):
         chroma = empty(2)
@@ -346,9 +344,9 @@ class TuneMap:
         self.k[:] = NaN
         self.chroma = copy(self.k)
 
-        self.mapF = Map(shape, name='F', atNames=('jX', 'i5', 'momComp', 'm0', 'm1'))
-        self.mapG = Map(shape, name='G', atNames=('jX', 'F', 'momComp', 'm0', 'm1'))
-        self.mapH = Map(shape, name='H', atNames=('jX', 'F', 'momComp', 'm0', 'm1', 'm2'))
+        self.mapF = Map(shape, name='F', atNames=('jX', 'i5sum', 'i1', 'm0', 'm1'))
+        self.mapG = Map(shape, name='G', atNames=('jX', 'F', 'i1', 'm0', 'm1'))
+        self.mapH = Map(shape, name='H', atNames=('jX', 'F', 'i1', 'm0', 'm1', 'm2'))
 
     def make(self):
         fc = FourierCell()
@@ -366,9 +364,9 @@ class TuneMap:
                 # ToDo:
                 # - write newton search on Jx (start, end) first
                 self.mapF.write(q,p,*directSearch(fc, fc.gr.F))
-                self.mapF.atArray[q,p] = fc.gr.jX(), fc.gr.i5(), fc.gr.momComp(), *fc.sextuVals()
+                self.mapF.atArray[q,p] = fc.gr.jX(), fc.gr.i5sum(), fc.gr.i1(), *fc.sextuVals()
                 self.mapG.write(q,p,*directSearch(fc, fc.G))
-                self.mapG.atArray[q,p] = fc.gr.jX(), fc.gr.F(), fc.gr.momComp(), *fc.sextuVals()
+                self.mapG.atArray[q,p] = fc.gr.jX(), fc.gr.F(), fc.gr.i1(), *fc.sextuVals()
 
                 fcTri.setKx(fc.k)
                 self.mapH.write(q,p,*directSearch(fcTri, fcTri.G))
