@@ -1,7 +1,7 @@
 """Figure generator for Mathieu cells"""
 from matplotlib import rc
 from matplotlib.pyplot import setp
-from numpy import arange, squeeze, array, empty_like, amax, absolute, NaN
+from numpy import arange, squeeze, array, deg2rad, empty_like, amax, absolute, NaN, pi
 from scipy.optimize import minimize as minix, minimize_scalar as minix_scalar
 from tools import subplots, saveFig, centaur
 from floquetCell import FloquetKSpace
@@ -324,6 +324,17 @@ if __name__ == '__main__':
 
             fig.subplots_adjust(top=0.97, bottom=0.15, left=0.07, right=0.98, wspace=0.1)
             saveFig(fig, filename)
+
+        elif filename == "compute":
+            print("sextupole scaling at SLS")
+            cellAngle = deg2rad(5.0)
+            cellLength = 2.165 # [m] 
+            invRho = cellAngle / cellLength # [1/m]
+            maxMu = 630.0 # sextupole strength [1/m^3]
+            maxM = 1.0 # assumed maxM value of lattice
+
+            optLength = pi * (maxM/(maxMu*invRho))**0.25
+            print("optimal length: %.3f m" % optLength)
 
         else:
             print("unrecognized filename")
