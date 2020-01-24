@@ -45,11 +45,11 @@ def plotJx(ax, tm : TuneMap, jX, grayMax=3.0):
                 faceLims=((-10, 0), (3, 100)), faceColors=('#cccccc', '#cccccc'))
 
 
-def plotMultipoles(ax, fc : FourierCell, sVar='s', sextupoles=False):
-    ax.plot(2*fc.gr.sL, fc.gr.b, label='$b(%c)$' % sVar, linewidth=0.7)
-    ax.plot(2*fc.gr.sL, fc.gr.k, label='$k(%c)$' % sVar, linewidth=0.7)
-    if sextupoles:
-        ax.plot(2*fc.gr.sL, fc.gr.mSext, label='$m(%c)$' % sVar, linewidth=0.7)
+def plotMultipoles(ax, fc : FourierCell, sVar='s', dipoleColor='black', quadColor='xkcd:ocean blue', sextColor='xkcd:mustard'):
+    ax.plot(2*fc.gr.sL, fc.gr.b, label='$b(%c)$' % sVar, linewidth=0.7, color=dipoleColor)
+    ax.plot(2*fc.gr.sL, fc.gr.k, label='$k(%c)$' % sVar, linewidth=0.7, color=quadColor)
+    if sextColor is not None:
+        ax.plot(2*fc.gr.sL, fc.gr.mSext, label='$m(%c)$' % sVar, linewidth=0.7, color=sextColor)
     ax.axhline(0, color='black', linestyle='dashed', linewidth=0.5)
     ax.set(xlim=(0,1), xlabel=r'%c / $2\pi$' % sVar)
 
@@ -113,8 +113,39 @@ def b1scan(axA, axB, nuX=0.45, nuY=0.35, minim=False, b1range=-arange(0,2.5,0.02
         [a.spines[dr].set_color(None) for dr in ('top', 'right')]
     axB.legend()
 
-exampleA = (0.45,0.35)
-exampleB = (0.15,0.35)
+
+def multicolor_ylabel(ax, list_of_strings, list_of_colors, anchorpad=0, **kw):
+    """from https://stackoverflow.com/questions/33159134/matplotlib-y-axis-label-with-multiple-colors
+    this function creates axes labels with multiple colors
+    ax specifies the axes object where the labels should be drawn
+    list_of_strings is a list of all of the text items
+    list_if_colors is a corresponding list of colors for the strings
+    axis='x', 'y', or 'both' and specifies which label(s) should be drawn"""
+    from matplotlib.offsetbox import AnchoredOffsetbox, TextArea, HPacker, VPacker
+
+    boxes = [TextArea(text, textprops=dict(color=color, ha='left', va='bottom', rotation=90, **kw))
+             for text, color in zip(list_of_strings[::-1], list_of_colors[::-1])]
+    ybox = VPacker(children=boxes, align="center", pad=0, sep=10)
+    anchored_ybox = AnchoredOffsetbox(loc=3, child=ybox, pad=anchorpad, frameon=False, bbox_to_anchor=(-0.2, 0.3),
+                                      bbox_transform=ax.transAxes, borderpad=0.)
+    ax.add_artist(anchored_ybox)
+
+
+def opticsPlot(axBeta, s, betaX, betaY, etaX, betaXcolor='xkcd:royal blue', betaYcolor='0.4', etaColor='red', prefix='', betaLim=17, etaLim=2.5):
+    axEta = axBeta.twinx() 
+    axBeta.plot(s, betaX, color=betaXcolor, label='x', linewidth=1)
+    axBeta.plot(s, betaY, color=betaYcolor, label='y', linewidth=1)
+    # axBeta.set(ylim=(0, betaLim))
+    multicolor_ylabel(axBeta, (r'$%s\beta_x$' % prefix, r'$%s\beta_y$' % prefix), (betaXcolor, betaYcolor))
+    axEta.plot(s, etaX, color=etaColor, linewidth=1)
+    axEta.set(ylim=(0, etaLim), yticks=arange(0, etaLim + 1))  # (0, 20, 40))
+    axEta.set_ylabel(r'$%s\eta_x$' % prefix, color=etaColor)
+
+    axBeta.spines['top'].set_color(None)
+    axEta.spines['top'].set_color(None)
+    axBeta.spines['right'].set_color(None)
+    axEta.spines['left'].set_color(None)
+
 
 if __name__ == '__main__':
     from sys import argv
@@ -125,6 +156,8 @@ if __name__ == '__main__':
     # elif mode=='PRAB':
     #    pass
 
+    exampleA = (0.45,0.35)
+    exampleB = (0.15,0.35)
 
     for filename in argv[1:]:
         if filename in ("islands.pdf","Islands.pdf"):
@@ -207,19 +240,17 @@ if __name__ == '__main__':
             if filename[0]=='e':
                 fig, ax = subplots(figsize=(0.5*columnWidth,0.68*columnWidth))
                 sVar = 's'
-                plotMultipoles(ax, fc, sVar=sVar)
-                etaLabel = r'$\eta(s)$'
+                plotMultipoles(ax, fc, sVar=sVar, sextColor=None)
                 betaLabel = r'$\beta_%c(s)$'
+                ax.plot(2*fc.gr.sL, fc.gr.betaX, label=betaLabel % 'x', color='xkcd:royal blue')
+                ax.plot(2*fc.gr.sL, fc.gr.betaY, label=betaLabel % 'y', color='0.4')
+                ax.plot(2*fc.gr.sL, fc.gr.eta, label=r'$\eta(s)$', color='red')
+
             else:
                 fig, (ax, axB) = subplots(2,1,figsize=(columnWidth, columnWidth), sharex=True)
                 sVar = 'u'
-                plotMultipoles(axB, fc, sVar=sVar, sextupoles=True)
-                etaLabel = r'$\tilde\eta(u)$'
-                betaLabel = r'$\tilde\beta_%c(u)$'
-                
-            ax.plot(2*fc.gr.sL, fc.gr.betaX, label=betaLabel % 'x', color='xkcd:navy blue')
-            ax.plot(2*fc.gr.sL, fc.gr.betaY, label=betaLabel % 'y', color='0.5')
-            ax.plot(2*fc.gr.sL, fc.gr.eta, label=etaLabel, color='red')
+                plotMultipoles(axB, fc, sVar=sVar)
+                opticsPlot(ax, 2*fc.gr.sL, fc.gr.betaX, fc.gr.betaY, fc.gr.eta, prefix=r'\tilde') 
 
             if filename[0]=='e':
                 fig.subplots_adjust(top=0.999, bottom=0.19, left=0.164, right=0.941)
@@ -227,11 +258,10 @@ if __name__ == '__main__':
                 ax.legend(prop={'size': 8})
                 [ax.spines[dr].set_color(None) for dr in ('top', 'right')]
             else:
-                fig.subplots_adjust(top=0.99, bottom=0.13, left=0.1, right=0.96)
+                fig.subplots_adjust(top=0.99, bottom=0.13, left=0.15, right=0.87)
                 ax.set(ylim=(0,17))
-                for a in (ax, axB):
-                    [a.spines[dr].set_color(None) for dr in ('top', 'right')]
-                    a.legend(ncol=2)
+                [axB.spines[dr].set_color(None) for dr in ('top', 'right')]
+                    # a.legend(ncol=2)
 
             print("nat. chroma %.4f %.4f, full chroma %.1e %.1e" % (*fc.gr.naturalChroma(), *fc.gr.fullChroma()))
             saveFig(fig, filename)
@@ -279,7 +309,7 @@ if __name__ == '__main__':
             if filename.startswith("b1scanA"):
                 chara = 'A'
                 b1scan(ag, ah, *exampleA) #, b1range=-arange(0.9,1.3,0.01))
-                ag.axvline(1.11, color='black', linewidth=0.5, linestyle='dotted')
+                [a.axvline(1.11, color='black', linewidth=0.5, linestyle='dotted') for a in (ag, ah)]
                 # ag.set(xlim=(0.9,1.3),ylim=(-1,15))
             else:
                 chara = 'B'
@@ -297,11 +327,12 @@ if __name__ == '__main__':
             fc.setB(array([b1]))
             fc.sextuVals()
 
-            fig, ax = subplots(figsize=(columnWidth,columnWidth))
-            plotMultipoles(ax, fc, 'u', sextupoles=True)
+            fig, ax = subplots(figsize=(columnWidth,0.6*columnWidth))
+            plotMultipoles(ax, fc, 'u')
             print("nat. chroma %.4f %.4f, full chroma %.1e %.1e" % (*fc.gr.naturalChroma(), *fc.gr.fullChroma()))
-            ax.legend()
-            saveFig(fig, filename, tight=True)
+            [ax.spines[dr].set_color(None) for dr in ('top', 'right')]
+            fig.subplots_adjust(top=0.98, bottom=0.225, left=0.15, right=0.87)
+            saveFig(fig, filename)
 
         elif filename == "H.pdf":
             print("some figures of merit for H-optimized cells (excluding sextupole strengths)")
@@ -331,10 +362,9 @@ if __name__ == '__main__':
             cellLength = 2.165 # [m] 
             invRho = cellAngle / cellLength # [1/m]
             maxMu = 630.0 # sextupole strength [1/m^3]
-            maxM = 1.0 # assumed maxM value of lattice
-
-            optLength = pi * (maxM/(maxMu*invRho))**0.25
-            print("optimal length: %.3f m" % optLength)
+            for maxM in (2.0,1.0): # assumed maxM value of lattice
+                optLength = pi * (maxM/(maxMu*invRho))**0.25
+                print("max |m| = %.1f: optimal length = %.3f m" % (maxM, optLength))
 
         else:
             print("unrecognized filename")
