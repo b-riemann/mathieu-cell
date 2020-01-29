@@ -174,7 +174,7 @@ def poleTipVals(gr : Grapher, LcL_range=arange(0,2.01,0.05), phiSteps=16):
     sheets = (outer(sin(phi), gr.b), outer(sin(2*phi), gr.k), outer(sin(3*phi), gr.mSext))
 
     max_m = amax(absolute(gr.mSext))
-
+    print('max m = %.4f' % max_m)
     BrBc = empty_like(LcL_range)
     BrBc_m = empty_like(LcL_range)
     for n, LcL in enumerate(LcL_range):  # i know this can be done without loop, but its still fast enough
@@ -182,6 +182,23 @@ def poleTipVals(gr : Grapher, LcL_range=arange(0,2.01,0.05), phiSteps=16):
         BrBc_surf = sheets[0] + sheets[1]*LcL**2 + sheets[2]*LcL**4  
         BrBc[n] = amax(absolute(BrBc_surf)) 
     return LcL_range, BrBc, BrBc_m
+
+
+def showSLSparameters():
+    print("SLS parameters:")
+    cellAngle = deg2rad(5.0)
+    cellLength = 2.165 # [m]
+    iinvRho = cellLength / cellAngle # [m]
+    bRho = 8.0
+    characteristicB = bRho/iinvRho
+    bMax = 2.2 / characteristicB
+    characteristicLength = pi*sqrt(0.009*iinvRho)
+    print(r"b \rho = %.1f T m" % bRho)
+    print(r"1 / < 1 / \rho > = %.2f m" % iinvRho)
+    print(r"B_c = %.4f T" % characteristicB)
+    print(r"max b = %.4f, max |b1| = %.4f" % (bMax, (bMax-1)/2))
+    print(r"L_c = %.4f m" % characteristicLength)
+    return iinvRho, bMax, characteristicLength
 
 
 if __name__ == '__main__':
@@ -273,18 +290,6 @@ if __name__ == '__main__':
             print("F = %.4f, Jx = %.4f, xi_x = %.4f, xi_y = %.4f, I1=%.6f" % 
               (fc.gr.F(),fc.gr.jX(),*fc.gr.naturalChroma(),fc.gr.i1()))
             print("m0=%.4f, m1=%.4f, G = %.4f" % (*fc.sextuVals(), fc.G()))
-
-            opaExport("example.opa", fc.gr)
-
-            fig, ax = subplots(figsize=(columnWidth,0.7*columnWidth))
-            LcL, BrBc, BrBc_m = poleTipVals(fc.gr)
-            ax.plot(LcL, BrBc)
-            ax.plot(LcL, BrBc_m, color='xkcd:mustard', linewidth=0.7)
-            ax.set(xlabel=r'$L_c$  / $L$', ylabel=r'max $B_r$  / $B_c$', 
-                   xlim=(0,LcL[-1]), ylim=(0,BrBc[-1]))
-            [ax.spines[dr].set_color(None) for dr in ('top', 'right')]
-            fig.subplots_adjust(top=.98,bottom=.2,left=.175,right=.96)
-            saveFig(fig, 'poleTip.pdf') 
 
             if filename[0]=='e':
                 fig, ax = subplots(figsize=(0.5*columnWidth,0.68*columnWidth))
@@ -383,6 +388,20 @@ if __name__ == '__main__':
             fig.subplots_adjust(top=0.98, bottom=0.225, left=0.15, right=0.87)
             saveFig(fig, filename)
 
+            opaExport("example.opa", fc.gr)
+
+            fig, ax = subplots(figsize=(columnWidth,0.7*columnWidth))
+            LcL, BrBc, BrBc_m = poleTipVals(fc.gr)
+            _, bMax, _ = showSLSparameters()
+            ax.plot(LcL, BrBc, zorder=3)
+            ax.plot(LcL, BrBc_m, color='xkcd:mustard', linewidth=0.7, zorder=3)
+            ax.axhline(bMax, linewidth=0.5, color='black', linestyle='dashed')
+            ax.set(xlabel=r'$L_c$  / $L$', ylabel=r'max $B_r$  / $B_c$', 
+                   xlim=(0,LcL[-1]), ylim=(0,BrBc[-1]))
+            [ax.spines[dr].set_color(None) for dr in ('top', 'right')]
+            fig.subplots_adjust(top=.98,bottom=.2,left=.175,right=.96)
+            saveFig(fig, 'poleTip.pdf') 
+
         elif filename == "H.pdf":
             print("some figures of merit for H-optimized cells (excluding sextupole strengths)")
             tm = generateMapIfNotExisting()
@@ -406,20 +425,7 @@ if __name__ == '__main__':
             saveFig(fig, filename)
 
         elif filename == "compute":
-            print("SLS parameters:")
-            cellAngle = deg2rad(5.0)
-            cellLength = 2.165 # [m]
-            iinvRho = cellLength / cellAngle # [m]
-            bRho = 8.0
-            characteristicB = bRho/iinvRho
-            bMax = 2.2 / characteristicB
-            characteristicLength = pi*sqrt(0.009*iinvRho)
-            print(r"b \rho = %.1f T m" % bRho)
-            print(r"1 / < 1 / \rho > = %.2f m" % iinvRho)
-            print(r"B_c = %.4f T" % characteristicB)
-            print(r"max b = %.4f, max |b1| = %.4f" % (bMax, (bMax-1)/2))
-            print(r"L_c = %.4f m" % characteristicLength)
-
+            iinvRho, _, _ = showSLSparameters()
             maxMu = 630.0 # sextupole strength [1/m^3]
             for maxM in (2.0,1.0): # assumed maxM value of lattice
                 optLength = pi * (maxM * iinvRho / maxMu)**0.25
