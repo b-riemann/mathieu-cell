@@ -1,11 +1,11 @@
 """Figure generator for Mathieu cells"""
 from matplotlib import rc
 from matplotlib.pyplot import setp
-from numpy import arange, squeeze, array, deg2rad, empty_like, amax, absolute, NaN, pi
+from numpy import arange, squeeze, array, deg2rad, rad2deg, diff, empty_like, amax, absolute, NaN, pi, mean, outer, sin, sqrt
 from scipy.optimize import minimize as minix, minimize_scalar as minix_scalar
 from tools import subplots, saveFig, centaur
 from floquetCell import FloquetKSpace
-from fourierCell import TuneMap, FourierCell
+from fourierCell import TuneMap, FourierCell, Grapher
 from time import time
 import os
 
@@ -147,6 +147,43 @@ def opticsPlot(axBeta, s, betaX, betaY, etaX, betaXcolor='xkcd:royal blue', beta
     axEta.spines['left'].set_color(None)
 
 
+def opaExport(filename, gr : Grapher, cellLength=1.4, energyGeV=2.4, curvature=deg2rad(5)/2.4):  # s, b, kArr, mArr):
+    s = gr.sL * cellLength
+    scaler = cellLength / pi
+
+    elemLength = mean(diff(s))
+    bendAngles = rad2deg(gr.b * elemLength) * curvature
+    kArr = gr.k / scaler**2
+    intSextuStrength = gr.mSext * (elemLength / 2) / curvature / scaler**4
+    lineElems = list()
+
+    with open(filename, 'w', encoding='cp1252') as f:
+        f.write('energy = %.6f;\n{--- table of elements ---}\n' % energyGeV)
+        for n, (t, k, mL) in enumerate(zip(bendAngles, kArr, intSextuStrength)):  # fixit later
+            f.write('thick%i : combined, l=%.6f, t=%.6f, k=%.6f, ax=10.00, ay=10.00;\n' % (n, elemLength, t, k))
+            f.write('sextu%i : sextupole, k=%.6f, ax=10.00, ay=10.00;\n' % (n, mL))
+            lineElems.extend(['thick%i' % n, 'sextu%i' % n])
+
+        f.write('cell : %s;\n' % ','.join(lineElems))
+        # f.write('cell: hcell, -hcell;\n')
+    print('sliced lattice exported to %s' % filename)
+
+
+def poleTipVals(gr : Grapher, LcL_range=arange(0,2.01,0.05), phiSteps=16):
+    phi= arange(phiSteps)/phiSteps * 2*pi
+    sheets = (outer(sin(phi), gr.b), outer(sin(2*phi), gr.k), outer(sin(3*phi), gr.mSext))
+
+    max_m = amax(absolute(gr.mSext))
+
+    BrBc = empty_like(LcL_range)
+    BrBc_m = empty_like(LcL_range)
+    for n, LcL in enumerate(LcL_range):  # i know this can be done without loop, but its still fast enough
+        BrBc_m[n] = max_m*LcL**4
+        BrBc_surf = sheets[0] + sheets[1]*LcL**2 + sheets[2]*LcL**4  
+        BrBc[n] = amax(absolute(BrBc_surf)) 
+    return LcL_range, BrBc, BrBc_m
+
+
 if __name__ == '__main__':
     from sys import argv
 
@@ -236,6 +273,18 @@ if __name__ == '__main__':
             print("F = %.4f, Jx = %.4f, xi_x = %.4f, xi_y = %.4f, I1=%.6f" % 
               (fc.gr.F(),fc.gr.jX(),*fc.gr.naturalChroma(),fc.gr.i1()))
             print("m0=%.4f, m1=%.4f, G = %.4f" % (*fc.sextuVals(), fc.G()))
+
+            opaExport("example.opa", fc.gr)
+
+            fig, ax = subplots(figsize=(columnWidth,0.7*columnWidth))
+            LcL, BrBc, BrBc_m = poleTipVals(fc.gr)
+            ax.plot(LcL, BrBc)
+            ax.plot(LcL, BrBc_m, color='xkcd:mustard', linewidth=0.7)
+            ax.set(xlabel=r'$L_c$  / $L$', ylabel=r'max $B_r$  / $B_c$', 
+                   xlim=(0,LcL[-1]), ylim=(0,BrBc[-1]))
+            [ax.spines[dr].set_color(None) for dr in ('top', 'right')]
+            fig.subplots_adjust(top=.98,bottom=.2,left=.175,right=.96)
+            saveFig(fig, 'poleTip.pdf') 
 
             if filename[0]=='e':
                 fig, ax = subplots(figsize=(0.5*columnWidth,0.68*columnWidth))
@@ -357,13 +406,23 @@ if __name__ == '__main__':
             saveFig(fig, filename)
 
         elif filename == "compute":
-            print("sextupole scaling at SLS")
+            print("SLS parameters:")
             cellAngle = deg2rad(5.0)
-            cellLength = 2.165 # [m] 
-            invRho = cellAngle / cellLength # [1/m]
+            cellLength = 2.165 # [m]
+            iinvRho = cellLength / cellAngle # [m]
+            bRho = 8.0
+            characteristicB = bRho/iinvRho
+            bMax = 2.2 / characteristicB
+            characteristicLength = pi*sqrt(0.009*iinvRho)
+            print(r"b \rho = %.1f T m" % bRho)
+            print(r"1 / < 1 / \rho > = %.2f m" % iinvRho)
+            print(r"B_c = %.4f T" % characteristicB)
+            print(r"max b = %.4f, max |b1| = %.4f" % (bMax, (bMax-1)/2))
+            print(r"L_c = %.4f m" % characteristicLength)
+
             maxMu = 630.0 # sextupole strength [1/m^3]
             for maxM in (2.0,1.0): # assumed maxM value of lattice
-                optLength = pi * (maxM/(maxMu*invRho))**0.25
+                optLength = pi * (maxM * iinvRho / maxMu)**0.25
                 print("max |m| = %.1f: optimal length = %.3f m" % (maxM, optLength))
 
         else:
