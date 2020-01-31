@@ -21,9 +21,16 @@ which will generate all required figures. Afterwards, you can call
    
 to update a given figure.
 
+## Known issues
+
+* in the `FourierCell` module, the sign of the b1 variable is defined opposite to the case in the paper
+
+* the `example.opa` file cannot be read directly into OPA sometimes: this is an encosing problem. using dos encoding should fix this; the easiest way is duplicating an existing opa file and copy-pasting the contents.
 
 ### internal structure
  
-* it seems that that the `microMacroCell` module is the older module i made. At the moment, `main.py` does not use `microMacroCell` in its dependencies.
+* The `microMacroCell` module stems from my earlier iteration on these scripts. It is stull used, but only to generate TuneMap k values
 
-* the `fourierCell` module has less functionality but is easier to use.
+* the `fourierCell` module holds the remaining core functionality.
+
+

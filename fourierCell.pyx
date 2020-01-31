@@ -367,7 +367,7 @@ class TuneMap:
                 self.mapG.write(q,p,*directSearch(fc, fc.G))
                 self.mapG.atArray[q,p] = fc.gr.jX(), fc.gr.F(), fc.gr.i1(), *fc.sextuVals()
 
-                fcTri.setKx(fc.k)
+                fcTri.tuneTo(tuneX, tuneY)
                 self.mapH.write(q,p,*directSearch(fcTri, fcTri.G))
                 self.mapH.atArray[q,p] = fcTri.gr.jX(), fcTri.gr.F(), fcTri.gr.i1(), *fcTri.sextuVals()
 

@@ -1,7 +1,7 @@
 """Figure generator for Mathieu cells"""
 from matplotlib import rc
 from matplotlib.pyplot import setp
-from numpy import arange, squeeze, array, deg2rad, rad2deg, diff, empty_like, amax, absolute, NaN, pi, mean, outer, sin, sqrt
+from numpy import arange, squeeze, array, ceil, deg2rad, rad2deg, diff, empty_like, amax, absolute, NaN, pi, mean, outer, sin, sqrt
 from scipy.optimize import minimize as minix, minimize_scalar as minix_scalar
 from tools import subplots, saveFig, centaur
 from floquetCell import FloquetKSpace
@@ -45,11 +45,16 @@ def plotJx(ax, tm : TuneMap, jX, grayMax=3.0):
                 faceLims=((-10, 0), (3, 100)), faceColors=('#cccccc', '#cccccc'))
 
 
-def plotMultipoles(ax, fc : FourierCell, sVar='s', dipoleColor='black', quadColor='xkcd:ocean blue', sextColor='xkcd:mustard'):
-    ax.plot(2*fc.gr.sL, fc.gr.b, label='$b(%c)$' % sVar, linewidth=0.7, color=dipoleColor)
-    ax.plot(2*fc.gr.sL, fc.gr.k, label='$k(%c)$' % sVar, linewidth=0.7, color=quadColor)
-    if sextColor is not None:
-        ax.plot(2*fc.gr.sL, fc.gr.mSext, label='$m(%c)$' % sVar, linewidth=0.7, color=sextColor)
+def plot_multp(ax, u, b, k, m=None, sVar='s', dipoleColor='black', quadColor='xkcd:ocean blue', sextColor='xkcd:mustard'):
+    ax.plot(u, b, label='$b(%c)$' % sVar, linewidth=0.7, color=dipoleColor)
+    ax.plot(u, k, label='$k(%c)$' % sVar, linewidth=0.7, color=quadColor)
+    if m is not None:
+        ax.plot(u, m, label='$m(%c)$' % sVar, linewidth=0.7, color=sextColor)
+    [ax.spines[dr].set_color(None) for dr in ('top', 'right')]
+
+
+def plotMultipoles(ax, gr : Grapher, sVar='s', sextupoles=False):
+    plot_multp(ax, 2*gr.sL, gr.b, gr.k, gr.mSext if sextupoles else None, sVar=sVar)
     ax.axhline(0, color='black', linestyle='dashed', linewidth=0.5)
     ax.set(xlim=(0,1), xlabel=r'%c / $2\pi$' % sVar)
 
@@ -63,7 +68,8 @@ def b1scan(axA, axB, nuX=0.45, nuY=0.35, minim=False, b1range=-arange(0,2.5,0.02
     fc = FourierCell()
     fcTri = FourierCell(mSize=3)
     tunes = fc.tuneTo(nuX, nuY)
-    fcTri.setKx(fc.k)
+    tunes = fcTri.tuneTo(nuX, nuY)
+    # fcTri.setKx(fc.k)
     # tunes = fc.tuneTo(0.15, 0.35)
     print("k_0 = %.5f, k_1 = %.5f" % tuple(fc.k))
     F = empty_like(b1range)
@@ -105,13 +111,13 @@ def b1scan(axA, axB, nuX=0.45, nuY=0.35, minim=False, b1range=-arange(0,2.5,0.02
     axB.plot(-b1range, G, label='$G$', linewidth=0.7, color='C1')
     axB.plot(-b1range, Gtri, label='$G_{tri}$', linewidth=0.7, color='magenta')
     axB.plot(-b1range, maxM, label='max $m$', linewidth=0.7, color='xkcd:red')
-    axB.plot(-b1range, maxMtri, label='max $m_{tri}$', linewidth=0.7, color='xkcd:maroon')
+    axB.plot(-b1range, maxMtri, label='max $m_{tri}$', linewidth=0.7, color='0.3')
 
     axA.set(xlim=(0,2.5), ylim=(-1,9.5), xlabel='$b_1$')
-    axB.set(xlim=(0,2.5), ylim=(0,8.5), xlabel='$b_1$')
+    axB.set(xlim=(0,2.5), ylim=(0,6), xlabel='$b_1$')
     for a in (axA, axB):    
         [a.spines[dr].set_color(None) for dr in ('top', 'right')]
-    axB.legend()
+    # axB.legend(ncol=2)
 
 
 def multicolor_ylabel(ax, list_of_strings, list_of_colors, anchorpad=0, **kw):
@@ -147,7 +153,7 @@ def opticsPlot(axBeta, s, betaX, betaY, etaX, betaXcolor='xkcd:royal blue', beta
     axEta.spines['left'].set_color(None)
 
 
-def opaExport(filename, gr : Grapher, cellLength=1.4, energyGeV=2.4, curvature=deg2rad(5)/2.4):  # s, b, kArr, mArr):
+def opaExport(filename, gr : Grapher, cellLength, energyGeV=2.4, curvature=deg2rad(5)/2.4):  # s, b, kArr, mArr):
     s = gr.sL * cellLength
     scaler = cellLength / pi
 
@@ -169,12 +175,15 @@ def opaExport(filename, gr : Grapher, cellLength=1.4, energyGeV=2.4, curvature=d
     print('sliced lattice exported to %s' % filename)
 
 
-def poleTipVals(gr : Grapher, LcL_range=arange(0,2.01,0.05), phiSteps=16):
+def poleSheets(gr : Grapher, phiSteps=16):
     phi= arange(phiSteps)/phiSteps * 2*pi
-    sheets = (outer(sin(phi), gr.b), outer(sin(2*phi), gr.k), outer(sin(3*phi), gr.mSext))
+    return outer(sin(phi), gr.b), outer(sin(2*phi), gr.k), outer(sin(3*phi), gr.mSext)
+
+def poleTipVals(gr : Grapher, LcL_range=arange(0,2.01,0.05)):
+    sheets = poleSheets(gr)
 
     max_m = amax(absolute(gr.mSext))
-    print('max m = %.4f' % max_m)
+    print('max m (by poletip) = %.4f' % max_m)
     BrBc = empty_like(LcL_range)
     BrBc_m = empty_like(LcL_range)
     for n, LcL in enumerate(LcL_range):  # i know this can be done without loop, but its still fast enough
@@ -184,21 +193,38 @@ def poleTipVals(gr : Grapher, LcL_range=arange(0,2.01,0.05), phiSteps=16):
     return LcL_range, BrBc, BrBc_m
 
 
-def showSLSparameters():
+def poleTipContribs(ax, gr : Grapher, LcL, characteristicB, lOPA):
+    s = lOPA * gr.sL
+    sheets = poleSheets(gr)
+    BrBc_surf = sheets[0] + sheets[1]*LcL**2 + sheets[2]*LcL**4  
+    plot_multp(ax, s, absolute(gr.b)*characteristicB, absolute(gr.k)*characteristicB*LcL**2, 
+               absolute(gr.mSext)*characteristicB*LcL**4)
+    ax.plot(s, characteristicB*amax(absolute(BrBc_surf), axis=0), color='red')
+    ax.set(xlim=(0,lOPA), xlabel=r'$s$ [m]', ylim=(0,1.52), ylabel=r'max $|B|$ [T]')
+
+
+def showSLSparameters(maxM=None):
     print("SLS parameters:")
     cellAngle = deg2rad(5.0)
     cellLength = 2.165 # [m]
     iinvRho = cellLength / cellAngle # [m]
     bRho = 8.0
     characteristicB = bRho/iinvRho
-    bMax = 2.2 / characteristicB
-    characteristicLength = pi*sqrt(0.009*iinvRho)
+    radius = 0.01
+    characteristicLength = pi*sqrt(radius*iinvRho)
     print(r"b \rho = %.1f T m" % bRho)
     print(r"1 / < 1 / \rho > = %.2f m" % iinvRho)
     print(r"B_c = %.4f T" % characteristicB)
-    print(r"max b = %.4f, max |b1| = %.4f" % (bMax, (bMax-1)/2))
-    print(r"L_c = %.4f m" % characteristicLength)
-    return iinvRho, bMax, characteristicLength
+    print(r"L_c = %.4f m (R=%.3f m) " % (characteristicLength, radius))
+
+    maxMu=650.0
+    peakFld = maxMu * bRho * radius**2
+    print("max |mu| = %.1f, peak at %.1f mm = %.2f T" % (maxMu, radius*1000, peakFld))
+
+    if maxM is not None:
+        optLength = pi * (maxM * iinvRho / maxMu)**0.25
+        print("max |m| = %.4f: optimal length = %.3f m" % (maxM, optLength))
+    return iinvRho, characteristicB, characteristicLength
 
 
 if __name__ == '__main__':
@@ -258,7 +284,7 @@ if __name__ == '__main__':
             tm = generateMapIfNotExisting()
             fig, ax = subplots(1, 4, figsize=(doubleWidth, 0.8*columnWidth), sharex=True, sharey=True)
             print('subplot 0: b1')
-            grayDiagram(ax[0], tm, tm.mapF.b1, arange(-1.4, -1.0, 0.1), fmt='%.1f', grayDiv=5)
+            grayDiagram(ax[0], tm, -tm.mapF.b1, arange(1.0, 1.4, 0.1), fmt='%.1f', grayDiv=5)
             print('subplot 1: F')
             plotF(ax[1], tm, tm.mapF.fval)            
             print('subplot 2: '+tm.mapF.atNames[0])
@@ -284,17 +310,19 @@ if __name__ == '__main__':
             else: # tunes from k vals
                 k = array([0.04801, 0.85536])
                 tunes = fc.setKxy(k)
-            print("k_0 = %.5f, k_1 = %.5f, b1 = %.4f" % (*fc.k, b1))
+            print("k_0 = %.5f, k_1 = %.5f, b1 = %.4f" % (*fc.k, -b1))
             print("nu_x = %.8f, nu_y=%.8f" % tunes)
             fc.setB(array([b1])) #[b1,1.3]))
             print("F = %.4f, Jx = %.4f, xi_x = %.4f, xi_y = %.4f, I1=%.6f" % 
               (fc.gr.F(),fc.gr.jX(),*fc.gr.naturalChroma(),fc.gr.i1()))
             print("m0=%.4f, m1=%.4f, G = %.4f" % (*fc.sextuVals(), fc.G()))
 
+            showSLSparameters( fc.maxM() )
+
             if filename[0]=='e':
                 fig, ax = subplots(figsize=(0.5*columnWidth,0.68*columnWidth))
                 sVar = 's'
-                plotMultipoles(ax, fc, sVar=sVar, sextColor=None)
+                plotMultipoles(ax, fc.gr, sVar=sVar)
                 betaLabel = r'$\beta_%c(s)$'
                 ax.plot(2*fc.gr.sL, fc.gr.betaX, label=betaLabel % 'x', color='xkcd:royal blue')
                 ax.plot(2*fc.gr.sL, fc.gr.betaY, label=betaLabel % 'y', color='0.4')
@@ -303,7 +331,7 @@ if __name__ == '__main__':
             else:
                 fig, (ax, axB) = subplots(2,1,figsize=(columnWidth, columnWidth), sharex=True)
                 sVar = 'u'
-                plotMultipoles(axB, fc, sVar=sVar)
+                plotMultipoles(axB, fc.gr, sVar=sVar, sextupoles=True)
                 opticsPlot(ax, 2*fc.gr.sL, fc.gr.betaX, fc.gr.betaY, fc.gr.eta, prefix=r'\tilde') 
 
             if filename[0]=='e':
@@ -314,8 +342,6 @@ if __name__ == '__main__':
             else:
                 fig.subplots_adjust(top=0.99, bottom=0.13, left=0.15, right=0.87)
                 ax.set(ylim=(0,17))
-                [axB.spines[dr].set_color(None) for dr in ('top', 'right')]
-                    # a.legend(ncol=2)
 
             print("nat. chroma %.4f %.4f, full chroma %.1e %.1e" % (*fc.gr.naturalChroma(), *fc.gr.fullChroma()))
             saveFig(fig, filename)
@@ -340,7 +366,7 @@ if __name__ == '__main__':
             tm = generateMapIfNotExisting()
             fig, ax = subplots(1, 4, figsize=(doubleWidth, 0.8*columnWidth), sharex=True, sharey=True)
             # print('subplot 0: b1')
-            # grayDiagram(ax[0], tm, tm.mapG.b1, arange(-1.2, -0.1, 0.1), fmt='%.2f', grayDiv=2)
+            # grayDiagram(ax[0], tm, -tm.mapG.b1, arange(0.1, 1.2, 0.1), fmt='%.2f', grayDiv=2)
             print('subplot 0: G')
             grayDiagram(ax[0], tm, tm.mapG.fval, arange(6), fmt='%i', grayMax=2, grayDiv=10)
             print('subplot 1: '+tm.mapG.atNames[1])
@@ -373,34 +399,50 @@ if __name__ == '__main__':
             fih.subplots_adjust(top=0.96, bottom=0.19, left=0.07, right=0.96)
             saveFig(fih, "b1scan%c-mG.pdf" % chara)
             
-        elif filename == "extendedExample.pdf":
+        elif filename in ("extendedExample.pdf", "poleTip.pdf", "example.opa"):
             fc = FourierCell(mSize=3)
             b1 = -1.11
             
             tunes = fc.tuneTo(0.45, 0.35)
             fc.setB(array([b1]))
             fc.sextuVals()
-
+            showSLSparameters( fc.maxM() )
+            
             fig, ax = subplots(figsize=(columnWidth,0.6*columnWidth))
-            plotMultipoles(ax, fc, 'u')
+            plotMultipoles(ax, fc.gr, 'u', sextupoles=True)
             print("nat. chroma %.4f %.4f, full chroma %.1e %.1e" % (*fc.gr.naturalChroma(), *fc.gr.fullChroma()))
-            [ax.spines[dr].set_color(None) for dr in ('top', 'right')]
             fig.subplots_adjust(top=0.98, bottom=0.225, left=0.15, right=0.87)
-            saveFig(fig, filename)
-
-            opaExport("example.opa", fc.gr)
+            saveFig(fig, "extendedExample.pdf")
 
             fig, ax = subplots(figsize=(columnWidth,0.7*columnWidth))
             LcL, BrBc, BrBc_m = poleTipVals(fc.gr)
-            _, bMax, _ = showSLSparameters()
+            _, characteristicB, characteristicLength = showSLSparameters()
+            lOPA = ceil(1000*characteristicLength/0.95 )/1000
+            print('L_opa = %.3f m' % lOPA)
+            opaExport("example.opa", fc.gr, lOPA)
+
+            print(r"B_r / B_c = %.3f, max B_dipole(b1) = %.2f T" % (BrBc[0], BrBc[0]*characteristicB))
+            for maxField in (1.5,2.0):
+                bMax = maxField / characteristicB
+                print(r"max B = %.1f T,  max b = %.4f, max |b1| = %.4f" % (maxField, bMax, (bMax-1)/2))
+                ax.axhline(bMax, linewidth=0.5, color='black', linestyle='dotted')
+
+            # ax.axvline(0.95, linewidth=0.5, color='black', linestyle='dotted')
+
             ax.plot(LcL, BrBc, zorder=3)
             ax.plot(LcL, BrBc_m, color='xkcd:mustard', linewidth=0.7, zorder=3)
-            ax.axhline(bMax, linewidth=0.5, color='black', linestyle='dashed')
-            ax.set(xlabel=r'$L_c$  / $L$', ylabel=r'max $B_r$  / $B_c$', 
-                   xlim=(0,LcL[-1]), ylim=(0,BrBc[-1]))
+            ax.scatter(LcL[19], BrBc[19], color='C0', s=4)
+
+            ax.set(xlabel=r'$L_c$  / $L$', ylabel=r'max $|B_r|$  / $B_c$', 
+                   xlim=(0,LcL[-1]), ylim=(0,35), yticks=arange(0,36,5))
             [ax.spines[dr].set_color(None) for dr in ('top', 'right')]
             fig.subplots_adjust(top=.98,bottom=.2,left=.175,right=.96)
-            saveFig(fig, 'poleTip.pdf') 
+            saveFig(fig, "poleTip.pdf") 
+
+            fig, ax = subplots(figsize=(columnWidth,0.7*columnWidth))
+            poleTipContribs(ax, fc.gr, LcL[19], characteristicB, lOPA)
+            fig.subplots_adjust(top=.98,bottom=.18,left=.18,right=.96)
+            saveFig(fig, "poleTipContribs.pdf")
 
         elif filename == "H.pdf":
             print("some figures of merit for H-optimized cells (excluding sextupole strengths)")
@@ -423,13 +465,6 @@ if __name__ == '__main__':
 
             fig.subplots_adjust(top=0.97, bottom=0.15, left=0.07, right=0.98, wspace=0.1)
             saveFig(fig, filename)
-
-        elif filename == "compute":
-            iinvRho, _, _ = showSLSparameters()
-            maxMu = 630.0 # sextupole strength [1/m^3]
-            for maxM in (2.0,1.0): # assumed maxM value of lattice
-                optLength = pi * (maxM * iinvRho / maxMu)**0.25
-                print("max |m| = %.1f: optimal length = %.3f m" % (maxM, optLength))
 
         else:
             print("unrecognized filename")
