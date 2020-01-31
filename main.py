@@ -42,7 +42,7 @@ def plotF(ax, tm, F):
 
 def plotJx(ax, tm : TuneMap, jX, grayMax=3.0):
     grayDiagram(ax, tm, jX, arange(0, 3.1, 0.5), fmt='%.1f', grayMax=grayMax,
-                faceLims=((-10, 0), (3, 100)), faceColors=('#cccccc', '#cccccc'))
+                faceLims=((-10, 0), (3, 10000)), faceColors=('#cccccc', '#cccccc'))
 
 
 def plot_multp(ax, u, b, k, m=None, sVar='s', dipoleColor='black', quadColor='xkcd:ocean blue', sextColor='xkcd:mustard'):
