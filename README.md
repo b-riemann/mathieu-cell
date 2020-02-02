@@ -25,6 +25,8 @@ to update a given figure.
 
 * in the `FourierCell` module, the sign of the b1 variable is defined opposite to the case in the paper
 
+* likewise in the `FourierCell` module, the sign of the k1 variable is defined opposite to the case in the paper
+
 * the `example.opa` file cannot be read directly into OPA sometimes: this is an encosing problem. using dos encoding should fix this; the easiest way is duplicating an existing opa file and copy-pasting the contents.
 
 ### internal structure
