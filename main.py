@@ -1,7 +1,7 @@
 """Figure generator for Mathieu cells"""
 from matplotlib import rc
 from matplotlib.pyplot import setp
-from numpy import arange, squeeze, array, ceil, deg2rad, rad2deg, diff, empty_like, amax, absolute, NaN, pi, mean, outer, sin, sqrt
+from numpy import arange, squeeze, array, ceil, deg2rad, rad2deg, diff, empty_like, amax, absolute, NaN, pi, mean, ones_like, outer, sin, sqrt
 from scipy.optimize import minimize as minix, minimize_scalar as minix_scalar
 from tools import subplots, saveFig, centaur
 from floquetCell import FloquetKSpace
@@ -179,19 +179,44 @@ def poleSheets(gr : Grapher, phiSteps=16):
     phi= arange(phiSteps)/phiSteps * 2*pi
     return outer(sin(phi), gr.b), outer(sin(2*phi), gr.k), outer(sin(3*phi), gr.mSext)
 
-def poleTipVals(gr : Grapher, LcL_range=arange(0,2.01,0.05)):
+
+def poleTipVals(ax, gr : Grapher, LcL_range=arange(0,2.01,0.05)):
     sheets = poleSheets(gr)
 
     max_m = amax(absolute(gr.mSext))
     print('max m (by poletip) = %.4f' % max_m)
-    BrBc = empty_like(LcL_range)
-    BrBc_m = empty_like(LcL_range)
+    BrBc_m = empty_like(LcL_range) # only sextupole
+    BrBc_bk = empty_like(LcL_range)
+    BrBc_bkm = empty_like(LcL_range)
     for n, LcL in enumerate(LcL_range):  # i know this can be done without loop, but its still fast enough
         BrBc_m[n] = max_m*LcL**4
-        BrBc_surf = sheets[0] + sheets[1]*LcL**2 + sheets[2]*LcL**4  
-        BrBc[n] = amax(absolute(BrBc_surf)) 
-    return LcL_range, BrBc, BrBc_m
+        BrBc_surf = sheets[0] + sheets[1]*LcL**2
+        BrBc_bk[n] = amax(absolute(BrBc_surf)) 
+        BrBc_surf += sheets[2]*LcL**4  
+        BrBc_bkm[n] = amax(absolute(BrBc_surf)) 
+    # return LcL_range, BrBc_m, BrBc_bk, BrBc_bkm
+    
+    _, characteristicB, characteristicLength = showSLSparameters()
+    print(r"B_r / B_c = %.3f, max B_dipole(b1) = %.2f T" % (BrBc_bkm[0], BrBc_bkm[0]*characteristicB))
 
+    for maxField in (1.5,2.0):
+        bMax = maxField / characteristicB
+        print(r"max B = %.1f T,  max b = %.4f, max |b1| = %.4f" % (maxField, bMax, (bMax-1)/2))
+        ax.axhline(bMax, linewidth=0.5, color='black', linestyle='dotted')
+
+    LcL_ref = LcL_range[19]
+    
+    ax.plot(LcL_range, BrBc_m, linewidth=0.7, color='xkcd:mustard')
+    # ax.plot(LcL_range, BrBc_bk, color='xkcd:ocean blue')
+    ax.plot(LcL_range, BrBc_bkm, color='red')
+    ax.scatter(LcL_ref, BrBc_bkm[19], color='red', s=4)
+    ax.set(xlabel=r'$L_c$  / $L$', ylabel=r'max $|B_r|$  / $B_c$', 
+           xlim=(0,LcL_range[-1]), ylim=(0,35), yticks=arange(0,36,5))
+    [ax.spines[dr].set_color(None) for dr in ('top', 'right')]
+
+    lOPA = ceil(1000*characteristicLength/LcL_ref )/1000
+    print('L_opa = %.3f m' % lOPA)
+    return LcL_ref, lOPA
 
 def poleTipContribs(ax, gr : Grapher, LcL, characteristicB, lOPA):
     s = lOPA * gr.sL
@@ -406,7 +431,7 @@ if __name__ == '__main__':
             tunes = fc.tuneTo(0.45, 0.35)
             fc.setB(array([b1]))
             fc.sextuVals()
-            showSLSparameters( fc.maxM() )
+            _, characteristicB, _ = showSLSparameters( fc.maxM() )
             
             fig, ax = subplots(figsize=(columnWidth,0.6*columnWidth))
             plotMultipoles(ax, fc.gr, 'u', sextupoles=True)
@@ -415,34 +440,17 @@ if __name__ == '__main__':
             saveFig(fig, "extendedExample.pdf")
 
             fig, ax = subplots(figsize=(columnWidth,0.7*columnWidth))
-            LcL, BrBc, BrBc_m = poleTipVals(fc.gr)
-            _, characteristicB, characteristicLength = showSLSparameters()
-            lOPA = ceil(1000*characteristicLength/0.95 )/1000
-            print('L_opa = %.3f m' % lOPA)
-            opaExport("example.opa", fc.gr, lOPA)
-
-            print(r"B_r / B_c = %.3f, max B_dipole(b1) = %.2f T" % (BrBc[0], BrBc[0]*characteristicB))
-            for maxField in (1.5,2.0):
-                bMax = maxField / characteristicB
-                print(r"max B = %.1f T,  max b = %.4f, max |b1| = %.4f" % (maxField, bMax, (bMax-1)/2))
-                ax.axhline(bMax, linewidth=0.5, color='black', linestyle='dotted')
-
-            # ax.axvline(0.95, linewidth=0.5, color='black', linestyle='dotted')
-
-            ax.plot(LcL, BrBc, zorder=3)
-            ax.plot(LcL, BrBc_m, color='xkcd:mustard', linewidth=0.7, zorder=3)
-            ax.scatter(LcL[19], BrBc[19], color='C0', s=4)
-
-            ax.set(xlabel=r'$L_c$  / $L$', ylabel=r'max $|B_r|$  / $B_c$', 
-                   xlim=(0,LcL[-1]), ylim=(0,35), yticks=arange(0,36,5))
-            [ax.spines[dr].set_color(None) for dr in ('top', 'right')]
+            LcL_ref, lOPA = poleTipVals(ax, fc.gr)
             fig.subplots_adjust(top=.98,bottom=.2,left=.175,right=.96)
             saveFig(fig, "poleTip.pdf") 
 
+            opaExport("example.opa", fc.gr, lOPA)
+
             fig, ax = subplots(figsize=(columnWidth,0.7*columnWidth))
-            poleTipContribs(ax, fc.gr, LcL[19], characteristicB, lOPA)
+            poleTipContribs(ax, fc.gr, LcL_ref, characteristicB, lOPA)
             fig.subplots_adjust(top=.98,bottom=.18,left=.18,right=.96)
             saveFig(fig, "poleTipContribs.pdf")
+
 
         elif filename == "H.pdf":
             print("some figures of merit for H-optimized cells (excluding sextupole strengths)")
