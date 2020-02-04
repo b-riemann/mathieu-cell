@@ -180,6 +180,30 @@ def poleSheets(gr : Grapher, phiSteps=16):
     return outer(sin(phi), gr.b), outer(sin(2*phi), gr.k), outer(sin(3*phi), gr.mSext)
 
 
+def showSLSparameters(maxM=None):
+    print("SLS parameters:")
+    cellAngle = deg2rad(5.0)
+    cellLength = 2.165 # [m]
+    iinvRho = cellLength / cellAngle # [m]
+    bRho = 8.0
+    characteristicB = bRho/iinvRho
+    radius = 0.01
+    characteristicLength = pi*sqrt(radius*iinvRho)
+    print(r"b \rho = %.1f T m" % bRho)
+    print(r"1 / < 1 / \rho > = %.2f m" % iinvRho)
+    print(r"B_c = %.4f T" % characteristicB)
+    print(r"L_c = %.4f m (R=%.3f m) " % (characteristicLength, radius))
+
+    maxMu=650.0
+    peakFld = maxMu * bRho * radius**2
+    print("max |mu| = %.1f, peak at %.1f mm = %.2f T" % (maxMu, radius*1000, peakFld))
+
+    if maxM is not None:
+        optLength = pi * (maxM * iinvRho / maxMu)**0.25
+        print("max |m| = %.4f: optimal length = %.3f m" % (maxM, optLength))
+    return iinvRho, characteristicB, characteristicLength
+
+
 def poleTipVals(ax, gr : Grapher, LcL_range=arange(0,2.01,0.05)):
     sheets = poleSheets(gr)
 
@@ -206,9 +230,9 @@ def poleTipVals(ax, gr : Grapher, LcL_range=arange(0,2.01,0.05)):
 
     LcL_ref = LcL_range[19]
     
+    ax.plot(LcL_range, BrBc_bkm, color='red')  # red
     ax.plot(LcL_range, BrBc_m, linewidth=0.7, color='xkcd:mustard')
     # ax.plot(LcL_range, BrBc_bk, color='xkcd:ocean blue')
-    ax.plot(LcL_range, BrBc_bkm, color='red')
     ax.scatter(LcL_ref, BrBc_bkm[19], color='red', s=4)
     ax.set(xlabel=r'$L_c$  / $L$', ylabel=r'max $|B_r|$  / $B_c$', 
            xlim=(0,LcL_range[-1]), ylim=(0,35), yticks=arange(0,36,5))
@@ -218,6 +242,7 @@ def poleTipVals(ax, gr : Grapher, LcL_range=arange(0,2.01,0.05)):
     print('L_opa = %.3f m' % lOPA)
     return LcL_ref, lOPA
 
+
 def poleTipContribs(ax, gr : Grapher, LcL, characteristicB, lOPA):
     s = lOPA * gr.sL
     sheets = poleSheets(gr)
@@ -226,30 +251,6 @@ def poleTipContribs(ax, gr : Grapher, LcL, characteristicB, lOPA):
                absolute(gr.mSext)*characteristicB*LcL**4)
     ax.plot(s, characteristicB*amax(absolute(BrBc_surf), axis=0), color='red')
     ax.set(xlim=(0,lOPA), xlabel=r'$s$ [m]', ylim=(0,1.52), ylabel=r'max $|B|$ [T]')
-
-
-def showSLSparameters(maxM=None):
-    print("SLS parameters:")
-    cellAngle = deg2rad(5.0)
-    cellLength = 2.165 # [m]
-    iinvRho = cellLength / cellAngle # [m]
-    bRho = 8.0
-    characteristicB = bRho/iinvRho
-    radius = 0.01
-    characteristicLength = pi*sqrt(radius*iinvRho)
-    print(r"b \rho = %.1f T m" % bRho)
-    print(r"1 / < 1 / \rho > = %.2f m" % iinvRho)
-    print(r"B_c = %.4f T" % characteristicB)
-    print(r"L_c = %.4f m (R=%.3f m) " % (characteristicLength, radius))
-
-    maxMu=650.0
-    peakFld = maxMu * bRho * radius**2
-    print("max |mu| = %.1f, peak at %.1f mm = %.2f T" % (maxMu, radius*1000, peakFld))
-
-    if maxM is not None:
-        optLength = pi * (maxM * iinvRho / maxMu)**0.25
-        print("max |m| = %.4f: optimal length = %.3f m" % (maxM, optLength))
-    return iinvRho, characteristicB, characteristicLength
 
 
 if __name__ == '__main__':
