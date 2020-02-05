@@ -204,7 +204,7 @@ def showSLSparameters(maxM=None):
     return iinvRho, characteristicB, characteristicLength
 
 
-def poleTipVals(ax, gr : Grapher, LcL_range=arange(0,2.01,0.05)):
+def poleTipVals(ax, gr : Grapher, LcL_range=arange(0,1.81,0.05)):
     sheets = poleSheets(gr)
 
     max_m = amax(absolute(gr.mSext))
@@ -235,7 +235,7 @@ def poleTipVals(ax, gr : Grapher, LcL_range=arange(0,2.01,0.05)):
     # ax.plot(LcL_range, BrBc_bk, color='xkcd:ocean blue')
     ax.scatter(LcL_ref, BrBc_bkm[19], color='red', s=4)
     ax.set(xlabel=r'$L_c$  / $L$', ylabel=r'max $|B_r|$  / $B_c$', 
-           xlim=(0,LcL_range[-1]), ylim=(0,35), yticks=arange(0,36,5))
+           xlim=(0,LcL_range[-1]), ylim=(0,25), yticks=arange(0,26,5))
     [ax.spines[dr].set_color(None) for dr in ('top', 'right')]
 
     lOPA = ceil(1000*characteristicLength/LcL_ref )/1000
