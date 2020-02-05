@@ -9,13 +9,12 @@ from libc.math cimport sin, sinh, sqrt, pi, fabs, asin
 from numpy.linalg import solve
 from tools import absq
 
-cdef void populateM(double[:,:] M, double[:,:] vals):  #, int P):
+cdef void populateM(double[:,:] M, double[:,:] vals):
     cdef int R = M.shape[0]  #=2P+1
     cdef int maxind = M.shape[1]
     cdef int N = vals.shape[0]
     cdef int n, r, q
     for n in range(1,N):
-        #for p in range(-P,P+1):
         for r in range(R):
             if r >= n:
                 M[r, r-n] = vals[n, r]
@@ -41,11 +40,10 @@ cdef double _tune(double k0, double detM):
 I5I2tme = 2 * (pi/2) ** 3 / (3 * sqrt(15))
 
 class SimpleFloquetCell:
-    # ToDo: now we are on the right track!
     def __init__(self, P=32, kDim=2):
         self.P = P
         self.pRange = arange(-P, P + 1)
-        self._mat = eye(self.pRange.size)  # worker array
+        self._mat = eye(self.pRange.size)
 
     def setM(self, k, nu=0.0):
         self._denom = k[0] - 4 * (self.pRange + nu) ** 2
@@ -54,7 +52,7 @@ class SimpleFloquetCell:
 
     def C(self, k):
         # Whittaker-Hill formula for tune estimates,
-        # eq. (2.13) in refs/characteristicExponents.pdf
+        # eq. (2.13) in [arXiv:math-ph/0510076]
         self.setM(k)
         return _C(k[0], det(self._mat))
 
@@ -103,9 +101,6 @@ class Grapher:
 
         self.alphaX, self.betaX, self.gammaX, self.betaY, self.k = [empty(samplingSteps, float) for _ in range(5)]
         self.eta, self.etaPrime, self.b, self.bSq, self.bCub = [empty(samplingSteps, float) for _ in range(5)]
-
-        # self._wedgeMat = empty(?,samplingSteps)
-        # self._wedgeMat[2:] = ?
 
     def inS_lim(self, km):
         # works for k, m (but not b)
@@ -173,7 +168,7 @@ class OptFloquetCell(SimpleFloquetCell):
 
         tuneX = self.tune(k)  #._mat set for nu=0
         fillB(self._bPars, b_nonzero, self.P)
-        vPars = solve(self._mat, self._bPars / self._denom) #must be before .uPars
+        vPars = solve(self._mat, self._bPars / self._denom) # must be before .uPars
 
         uParsX = self.uPars(k, tuneX) #._mat set for nu = tuneX, not used further
         return tuneX, tuneY, uParsX, uParsY, vPars
@@ -190,4 +185,4 @@ class OptFloquetCell(SimpleFloquetCell):
         # compute chromaticity and compensation
         chromaX, chromaY = self.grapher.chroma()
         m0, m1 = self.grapher.compensateM01(chromaX, chromaY)
-        return tuneX, tuneY, i2, i4r, i5, m0, m1 #, sextupole & chromaticity quantities
+        return tuneX, tuneY, i2, i4r, i5, m0, m1

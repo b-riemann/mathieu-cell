@@ -14,7 +14,7 @@ rc('font', family='serif')
 # rc('contour', negative_linestyle='solid')
 
 def generateMapIfNotExisting():
-    tm = TuneMap()  # b1Range=-arange(0, 1.5, 0.02)) # -arange(0, 1.5, 0.05)  # arange(0, 2, 0.1), arange(-1.4, 0.01, 0.05)
+    tm = TuneMap()
     if os.path.isfile('F.pkl'):
         tm.load()
     else:
@@ -61,7 +61,7 @@ def plotMultipoles(ax, gr : Grapher, sVar='s', sextupoles=False):
 
 def obig(b2, b1, fc : FourierCell):
     fc.setB(array([b1,b2]))
-    return fc.G()  # (fc.gr.jX()-2.5)**2
+    return fc.G()
 
 
 def b1scan(axA, axB, nuX=0.45, nuY=0.35, minim=False, b1range=-arange(0,2.5,0.02)):
@@ -69,8 +69,6 @@ def b1scan(axA, axB, nuX=0.45, nuY=0.35, minim=False, b1range=-arange(0,2.5,0.02
     fcTri = FourierCell(mSize=3)
     tunes = fc.tuneTo(nuX, nuY)
     tunes = fcTri.tuneTo(nuX, nuY)
-    # fcTri.setKx(fc.k)
-    # tunes = fc.tuneTo(0.15, 0.35)
     print("k_0 = %.5f, k_1 = %.5f" % tuple(fc.k))
     F = empty_like(b1range)
     jX = empty_like(b1range)
@@ -117,7 +115,6 @@ def b1scan(axA, axB, nuX=0.45, nuY=0.35, minim=False, b1range=-arange(0,2.5,0.02
     axB.set(xlim=(0,2.5), ylim=(0,6), xlabel='$b_1$')
     for a in (axA, axB):    
         [a.spines[dr].set_color(None) for dr in ('top', 'right')]
-    # axB.legend(ncol=2)
 
 
 def multicolor_ylabel(ax, list_of_strings, list_of_colors, anchorpad=0, **kw):
@@ -137,14 +134,13 @@ def multicolor_ylabel(ax, list_of_strings, list_of_colors, anchorpad=0, **kw):
     ax.add_artist(anchored_ybox)
 
 
-def opticsPlot(axBeta, s, betaX, betaY, etaX, betaXcolor='xkcd:royal blue', betaYcolor='0.4', etaColor='red', prefix='', betaLim=17, etaLim=2.5):
+def opticsPlot(axBeta, s, betaX, betaY, etaX, betaXcolor='xkcd:royal blue', betaYcolor='0.4', etaColor='red', prefix='', etaLim=2.5):
     axEta = axBeta.twinx() 
     axBeta.plot(s, betaX, color=betaXcolor, label='x', linewidth=1)
     axBeta.plot(s, betaY, color=betaYcolor, label='y', linewidth=1)
-    # axBeta.set(ylim=(0, betaLim))
     multicolor_ylabel(axBeta, (r'$%s\beta_x$' % prefix, r'$%s\beta_y$' % prefix), (betaXcolor, betaYcolor))
     axEta.plot(s, etaX, color=etaColor, linewidth=1)
-    axEta.set(ylim=(0, etaLim), yticks=arange(0, etaLim + 1))  # (0, 20, 40))
+    axEta.set(ylim=(0, etaLim), yticks=arange(0, etaLim + 1))
     axEta.set_ylabel(r'$%s\eta_x$' % prefix, color=etaColor)
 
     axBeta.spines['top'].set_color(None)
@@ -171,7 +167,6 @@ def opaExport(filename, gr : Grapher, cellLength, energyGeV=2.4, curvature=deg2r
             lineElems.extend(['thick%i' % n, 'sextu%i' % n])
 
         f.write('cell : %s;\n' % ','.join(lineElems))
-        # f.write('cell: hcell, -hcell;\n')
     print('sliced lattice exported to %s' % filename)
 
 
@@ -194,7 +189,7 @@ def showSLSparameters(maxM=None):
     print(r"B_c = %.4f T" % characteristicB)
     print(r"L_c = %.4f m (R=%.3f m) " % (characteristicLength, radius))
 
-    maxMu=650.0
+    maxMu = 650.0
     peakFld = maxMu * bRho * radius**2
     print("max |mu| = %.1f, peak at %.1f mm = %.2f T" % (maxMu, radius*1000, peakFld))
 
@@ -218,7 +213,6 @@ def poleTipVals(ax, gr : Grapher, LcL_range=arange(0,1.81,0.05)):
         BrBc_bk[n] = amax(absolute(BrBc_surf)) 
         BrBc_surf += sheets[2]*LcL**4  
         BrBc_bkm[n] = amax(absolute(BrBc_surf)) 
-    # return LcL_range, BrBc_m, BrBc_bk, BrBc_bkm
     
     _, characteristicB, characteristicLength = showSLSparameters()
     print(r"B_r / B_c = %.3f, max B_dipole(b1) = %.2f T" % (BrBc_bkm[0], BrBc_bkm[0]*characteristicB))
@@ -256,11 +250,8 @@ def poleTipContribs(ax, gr : Grapher, LcL, characteristicB, lOPA):
 if __name__ == '__main__':
     from sys import argv
 
-    # if mode=='JaCoW':
     columnWidth = 3.28
     doubleWidth = 6.68
-    # elif mode=='PRAB':
-    #    pass
 
     exampleA = (0.45,0.35)
     exampleB = (0.15,0.35)
