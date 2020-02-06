@@ -251,7 +251,7 @@ if __name__ == '__main__':
     from sys import argv
 
     columnWidth = 3.28
-    doubleWidth = 6.68
+    doubleWidth = 7.0  # 6.68
 
     exampleA = (0.45,0.35)
     exampleB = (0.15,0.35)
@@ -315,7 +315,7 @@ if __name__ == '__main__':
             for a in ax:
                 setp(a.get_xticklabels()[0], visible=False)
 
-            fig.subplots_adjust(top=0.97, bottom=0.15, left=0.07, right=0.98, wspace=0.1)
+            fig.subplots_adjust(top=0.97, bottom=0.15, left=0.075, right=0.985, wspace=0.045)
             saveFig(fig, filename)
 
         elif filename in ("example.pdf", "Example.pdf"):
@@ -397,7 +397,7 @@ if __name__ == '__main__':
             for a in ax:
                 setp(a.get_xticklabels()[0], visible=False)
 
-            fig.subplots_adjust(top=0.97, bottom=0.15, left=0.07, right=0.98, wspace=0.1)
+            fig.subplots_adjust(top=0.97, bottom=0.15, left=0.075, right=0.985, wspace=0.045)
             saveFig(fig, filename)
 
         elif filename.startswith("b1scan"):
@@ -463,7 +463,7 @@ if __name__ == '__main__':
             for a in ax:
                 setp(a.get_xticklabels()[0], visible=False)
 
-            fig.subplots_adjust(top=0.97, bottom=0.15, left=0.07, right=0.98, wspace=0.1)
+            fig.subplots_adjust(top=0.97, bottom=0.15, left=0.075, right=0.985, wspace=0.045)
             saveFig(fig, filename)
 
         else:
