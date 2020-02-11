@@ -106,7 +106,7 @@ def b1scan(axA, axB, nuX=0.45, nuY=0.35, minim=False, b1range=-arange(0,2.5,0.02
     axA.axhline(3, color='black', linewidth=0.5, linestyle='dotted')
     axA.axhline(0, color='black', linewidth=0.5, linestyle='dotted')
     axA.plot(-b1range, F, label='$F$', linewidth=0.7, color='xkcd:royal blue')
-    axB.plot(-b1range, G, label='$G$', linewidth=0.7, color='C1')
+    axB.plot(-b1range, G, label='$G$', linewidth=0.7, color='xkcd:mustard')
     axB.plot(-b1range, Gtri, label='$G_{tri}$', linewidth=0.7, color='magenta')
     axB.plot(-b1range, maxM, label='max $m$', linewidth=0.7, color='xkcd:red')
     axB.plot(-b1range, maxMtri, label='max $m_{tri}$', linewidth=0.7, color='0.3')
