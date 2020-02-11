@@ -170,9 +170,10 @@ def opaExport(filename, gr : Grapher, cellLength, energyGeV=2.4, curvature=deg2r
     print('sliced lattice exported to %s' % filename)
 
 
-def poleSheets(gr : Grapher, phiSteps=16):
+def poleSheets(gr : Grapher, weighted=False, phiSteps=16):
     phi= arange(phiSteps)/phiSteps * 2*pi
-    return outer(sin(phi), gr.b), outer(sin(2*phi), gr.k), outer(sin(3*phi), gr.mSext)
+    weights = (1,2,3) if weighted else (1,1,1)
+    return weights[0]*outer(sin(phi), gr.b), weights[1]*outer(sin(2*phi), gr.k), weights[2]*outer(sin(3*phi), gr.mSext)
 
 
 def showSLSparameters(maxM=None):
@@ -199,10 +200,12 @@ def showSLSparameters(maxM=None):
     return iinvRho, characteristicB, characteristicLength
 
 
-def poleTipVals(ax, gr : Grapher, LcL_range=arange(0,1.81,0.05)):
-    sheets = poleSheets(gr)
+def poleTipVals(ax, gr : Grapher, LcL_range=arange(0,1.81,0.005), weighted=False):
+    sheets = poleSheets(gr, weighted)
 
     max_m = amax(absolute(gr.mSext))
+    if weighted:
+        max_m *= 3
     print('max m (by poletip) = %.4f' % max_m)
     BrBc_m = empty_like(LcL_range) # only sextupole
     BrBc_bk = empty_like(LcL_range)
@@ -217,17 +220,18 @@ def poleTipVals(ax, gr : Grapher, LcL_range=arange(0,1.81,0.05)):
     _, characteristicB, characteristicLength = showSLSparameters()
     print(r"B_r / B_c = %.3f, max B_dipole(b1) = %.2f T" % (BrBc_bkm[0], BrBc_bkm[0]*characteristicB))
 
-    for maxField in (1.5,2.0):
-        bMax = maxField / characteristicB
-        print(r"max B = %.1f T,  max b = %.4f, max |b1| = %.4f" % (maxField, bMax, (bMax-1)/2))
-        ax.axhline(bMax, linewidth=0.5, color='black', linestyle='dotted')
+    maxField = 2.0  # T
+    bMax = maxField / characteristicB
+    print(r"max B = %.1f T,  max b = %.4f, max |b1| = %.4f" % (maxField, bMax, (bMax-1)/2))
+    ax.axhline(bMax, linewidth=0.5, color='black', linestyle='dotted')
 
-    LcL_ref = LcL_range[19]
-    
+    LcL_ref = LcL_range[171]
+    BrBc_bkm_ref = BrBc_bkm[171]
+
     ax.plot(LcL_range, BrBc_bkm, color='red')  # red
     ax.plot(LcL_range, BrBc_m, linewidth=0.7, color='xkcd:mustard')
     # ax.plot(LcL_range, BrBc_bk, color='xkcd:ocean blue')
-    ax.scatter(LcL_ref, BrBc_bkm[19], color='red', s=4)
+    ax.scatter(LcL_ref, BrBc_bkm_ref, color='red', s=4)
     ax.set(xlabel=r'$L_c$  / $L$', ylabel=r'max $|B_r|$  / $B_c$', 
            xlim=(0,LcL_range[-1]), ylim=(0,25), yticks=arange(0,26,5))
     [ax.spines[dr].set_color(None) for dr in ('top', 'right')]
@@ -237,14 +241,23 @@ def poleTipVals(ax, gr : Grapher, LcL_range=arange(0,1.81,0.05)):
     return LcL_ref, lOPA
 
 
-def poleTipContribs(ax, gr : Grapher, LcL, characteristicB, lOPA):
+def poleTipContribs(ax, gr : Grapher, LcL, characteristicB, lOPA, weighted=False):
     s = lOPA * gr.sL
-    sheets = poleSheets(gr)
+
+    sheets = poleSheets(gr, weighted=False)
     BrBc_surf = sheets[0] + sheets[1]*LcL**2 + sheets[2]*LcL**4  
-    plot_multp(ax, s, absolute(gr.b)*characteristicB, absolute(gr.k)*characteristicB*LcL**2, 
-               absolute(gr.mSext)*characteristicB*LcL**4)
-    ax.plot(s, characteristicB*amax(absolute(BrBc_surf), axis=0), color='red')
-    ax.set(xlim=(0,lOPA), xlabel=r'$s$ [m]', ylim=(0,1.52), ylabel=r'max $|B|$ [T]')
+    sheets = poleSheets(gr, weighted=True)
+    BrBc_surf_weighted = sheets[0] + sheets[1]*LcL**2 + sheets[2]*LcL**4  
+
+
+    # we want to show actual pole-tip field of multipoles w.o. weighting:
+    plot_multp(ax, s, absolute(gr.b)*characteristicB,
+                      absolute(gr.k)*characteristicB*LcL**2, 
+                      absolute(gr.mSext)*characteristicB*LcL**4)
+    ax.plot(s, characteristicB*amax(absolute(BrBc_surf), axis=0), color='0.6')
+    ax.plot(s, characteristicB*amax(absolute(BrBc_surf_weighted), axis=0), color='red')
+    ax.axhline(2.0, linewidth=0.5, color='black', linestyle='dotted')
+    ax.set(xlim=(0,lOPA), xlabel=r'$s$ [m]', ylim=(0,2.02), ylabel=r'max $|B|$ [T]')
 
 
 if __name__ == '__main__':
@@ -432,14 +445,14 @@ if __name__ == '__main__':
             saveFig(fig, "extendedExample.pdf")
 
             fig, ax = subplots(figsize=(columnWidth,0.7*columnWidth))
-            LcL_ref, lOPA = poleTipVals(ax, fc.gr)
+            LcL_ref, lOPA = poleTipVals(ax, fc.gr, weighted=True)
             fig.subplots_adjust(top=.98,bottom=.2,left=.175,right=.96)
             saveFig(fig, "poleTip.pdf") 
 
             opaExport("example.opa", fc.gr, lOPA)
 
-            fig, ax = subplots(figsize=(columnWidth,0.7*columnWidth))
-            poleTipContribs(ax, fc.gr, LcL_ref, characteristicB, lOPA)
+            fig, ax = subplots(figsize=(columnWidth,0.9*columnWidth))
+            poleTipContribs(ax, fc.gr, LcL_ref, characteristicB, lOPA, weighted=True)
             fig.subplots_adjust(top=.98,bottom=.18,left=.18,right=.96)
             saveFig(fig, "poleTipContribs.pdf")
 
