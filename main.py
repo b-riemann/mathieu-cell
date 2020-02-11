@@ -200,22 +200,21 @@ def showSLSparameters(maxM=None):
     return iinvRho, characteristicB, characteristicLength
 
 
-def poleTipVals(ax, gr : Grapher, LcL_range=arange(0,1.81,0.005), weighted=False):
-    sheets = poleSheets(gr, weighted)
+def poleTipVals(ax, gr : Grapher, LcL_range=arange(0,1.81,0.01), weighted=False):
+    sheets = poleSheets(gr, weighted=False)
+    sheets_w = poleSheets(gr, weighted=True)
 
     max_m = amax(absolute(gr.mSext))
-    if weighted:
-        max_m *= 3
     print('max m (by poletip) = %.4f' % max_m)
     BrBc_m = empty_like(LcL_range) # only sextupole
-    BrBc_bk = empty_like(LcL_range)
     BrBc_bkm = empty_like(LcL_range)
+    BrBc_bkm_w = empty_like(LcL_range)
     for n, LcL in enumerate(LcL_range):  # i know this can be done without loop, but its still fast enough
         BrBc_m[n] = max_m*LcL**4
-        BrBc_surf = sheets[0] + sheets[1]*LcL**2
-        BrBc_bk[n] = amax(absolute(BrBc_surf)) 
-        BrBc_surf += sheets[2]*LcL**4  
+        BrBc_surf = sheets[0] + sheets[1]*LcL**2 + sheets[2]*LcL**4  
         BrBc_bkm[n] = amax(absolute(BrBc_surf)) 
+        BrBc_surf_w = sheets_w[0] + sheets_w[1]*LcL**2 + sheets_w[2]*LcL**4  
+        BrBc_bkm_w[n] = amax(absolute(BrBc_surf_w)) 
     
     _, characteristicB, characteristicLength = showSLSparameters()
     print(r"B_r / B_c = %.3f, max B_dipole(b1) = %.2f T" % (BrBc_bkm[0], BrBc_bkm[0]*characteristicB))
@@ -225,13 +224,12 @@ def poleTipVals(ax, gr : Grapher, LcL_range=arange(0,1.81,0.005), weighted=False
     print(r"max B = %.1f T,  max b = %.4f, max |b1| = %.4f" % (maxField, bMax, (bMax-1)/2))
     ax.axhline(bMax, linewidth=0.5, color='black', linestyle='dotted')
 
-    LcL_ref = LcL_range[171]
-    BrBc_bkm_ref = BrBc_bkm[171]
+    LcL_ref = 0.855
 
-    ax.plot(LcL_range, BrBc_bkm, color='red')  # red
+    ax.plot(LcL_range, BrBc_bkm_w, color='red')
+    ax.plot(LcL_range, BrBc_bkm, color='0.6')
     ax.plot(LcL_range, BrBc_m, linewidth=0.7, color='xkcd:mustard')
-    # ax.plot(LcL_range, BrBc_bk, color='xkcd:ocean blue')
-    ax.scatter(LcL_ref, BrBc_bkm_ref, color='red', s=4)
+    ax.axvline(LcL_ref, linewidth=0.5, color='black', linestyle='dotted')
     ax.set(xlabel=r'$L_c$  / $L$', ylabel=r'max $|B_r|$  / $B_c$', 
            xlim=(0,LcL_range[-1]), ylim=(0,25), yticks=arange(0,26,5))
     [ax.spines[dr].set_color(None) for dr in ('top', 'right')]
@@ -241,7 +239,7 @@ def poleTipVals(ax, gr : Grapher, LcL_range=arange(0,1.81,0.005), weighted=False
     return LcL_ref, lOPA
 
 
-def poleTipContribs(ax, gr : Grapher, LcL, characteristicB, lOPA, weighted=False):
+def poleTipContribs(ax, gr : Grapher, LcL, characteristicB, lOPA):
     s = lOPA * gr.sL
 
     sheets = poleSheets(gr, weighted=False)
@@ -452,7 +450,7 @@ if __name__ == '__main__':
             opaExport("example.opa", fc.gr, lOPA)
 
             fig, ax = subplots(figsize=(columnWidth,0.9*columnWidth))
-            poleTipContribs(ax, fc.gr, LcL_ref, characteristicB, lOPA, weighted=True)
+            poleTipContribs(ax, fc.gr, LcL_ref, characteristicB, lOPA)
             fig.subplots_adjust(top=.98,bottom=.18,left=.18,right=.96)
             saveFig(fig, "poleTipContribs.pdf")
 
