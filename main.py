@@ -10,7 +10,7 @@ from time import time
 import os
 
 # rc('text', usetex=True)
-rc('font', family='serif')
+rc('font', family='serif', size=8)
 # rc('contour', negative_linestyle='solid')
 
 def generateMapIfNotExisting():
@@ -192,7 +192,7 @@ def showSLSparameters(maxM=None):
 
     maxMu = 650.0
     peakFld = maxMu * bRho * radius**2
-    print("max |mu| = %.1f, peak at %.1f mm = %.2f T" % (maxMu, radius*1000, peakFld))
+    print("max |mu| = %.1f, peak at %.1f mm = %.3f T" % (maxMu, radius*1000, peakFld))
 
     if maxM is not None:
         optLength = pi * (maxM * iinvRho / maxMu)**0.25
@@ -444,14 +444,14 @@ if __name__ == '__main__':
 
             fig, ax = subplots(figsize=(columnWidth,0.7*columnWidth))
             LcL_ref, lOPA = poleTipVals(ax, fc.gr, weighted=True)
-            fig.subplots_adjust(top=.98,bottom=.2,left=.175,right=.96)
+            fig.subplots_adjust(top=.98,bottom=.16,left=.16,right=.98)
             saveFig(fig, "poleTip.pdf") 
 
             opaExport("example.opa", fc.gr, lOPA)
 
             fig, ax = subplots(figsize=(columnWidth,0.9*columnWidth))
             poleTipContribs(ax, fc.gr, LcL_ref, characteristicB, lOPA)
-            fig.subplots_adjust(top=.98,bottom=.18,left=.18,right=.96)
+            fig.subplots_adjust(top=.98,bottom=.16,left=.18,right=.98)
             saveFig(fig, "poleTipContribs.pdf")
 
 
