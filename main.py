@@ -149,7 +149,7 @@ def opticsPlot(axBeta, s, betaX, betaY, etaX, betaXcolor='xkcd:royal blue', beta
     axEta.spines['left'].set_color(None)
 
 
-def opaExport(filename, gr : Grapher, cellLength, energyGeV=2.4, curvature=deg2rad(5)/2.4):  # s, b, kArr, mArr):
+def opaExport(filename, gr : Grapher, cellLength, curvature, energyGeV=2.4):
     s = gr.sL * cellLength
     scaler = cellLength / pi
 
@@ -434,7 +434,7 @@ if __name__ == '__main__':
             tunes = fc.tuneTo(0.45, 0.35)
             fc.setB(array([b1]))
             fc.sextuVals()
-            _, characteristicB, _ = showSLSparameters( fc.maxM() )
+            iinvRho, characteristicB, _ = showSLSparameters( fc.maxM() )
             
             fig, ax = subplots(figsize=(columnWidth,0.6*columnWidth))
             plotMultipoles(ax, fc.gr, 'u', sextupoles=True)
@@ -447,7 +447,7 @@ if __name__ == '__main__':
             fig.subplots_adjust(top=.98,bottom=.16,left=.16,right=.98)
             saveFig(fig, "poleTip.pdf") 
 
-            opaExport("example.opa", fc.gr, lOPA)
+            opaExport("example.opa", fc.gr, lOPA, 1.0/iinvRho)
 
             fig, ax = subplots(figsize=(columnWidth,0.9*columnWidth))
             poleTipContribs(ax, fc.gr, LcL_ref, characteristicB, lOPA)
