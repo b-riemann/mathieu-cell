@@ -1,9 +1,9 @@
 """Figure generator for Mathieu cells"""
 from matplotlib import rc
 from matplotlib.pyplot import setp
-from numpy import arange, squeeze, array, ceil, deg2rad, rad2deg, diff, empty_like, amax, absolute, NaN, pi, mean, ones_like, outer, sin, sqrt
+from numpy import arange, squeeze, array, ceil, deg2rad, rad2deg, diff, empty, empty_like, amax, absolute, NaN, pi, mean, ones_like, outer, sin, sqrt
 from scipy.optimize import minimize as minix, minimize_scalar as minix_scalar
-from tools import subplots, saveFig, centaur
+from tools import subplots, saveFig, centaur, plot_multp, opticsPlot
 from floquetCell import FloquetKSpace
 from fourierCell import TuneMap, FourierCell, Grapher
 from time import time
@@ -161,22 +161,26 @@ def showSLSparameters(maxM=None):
     return iinvRho, characteristicB, characteristicLength
 
 
-def poleTipVals(ax, gr : Grapher, LcL_range=arange(0,1.81,0.01), weighted=False):
+def pole_tip_proc(sheets, LcL_range):
+    # i know this can be done without loops, but its still fast enough
+    BrBc = empty_like(LcL_range)
+    for n, LcL in enumerate(LcL_range):
+        BrBc_surf = sheets[0] + sheets[1]*LcL**2 + sheets[2]*LcL**4  
+        BrBc[n] = amax(absolute(BrBc_surf)) 
+    return BrBc
+
+
+def poleTipVals(ax, gr : Grapher, LcL_range=arange(0,1.81,0.01)):
     sheets = poleSheets(gr, weighted=False)
+    BrBc_bkm = pole_tip_proc(sheets, LcL_range)
+    
     sheets_w = poleSheets(gr, weighted=True)
+    BrBc_bkm_w = pole_tip_proc(sheets_w, LcL_range) 
 
     max_m = amax(absolute(gr.mSext))
     print('max m (by poletip) = %.4f' % max_m)
-    BrBc_m = empty_like(LcL_range) # only sextupole
-    BrBc_bkm = empty_like(LcL_range)
-    BrBc_bkm_w = empty_like(LcL_range)
-    for n, LcL in enumerate(LcL_range):  # i know this can be done without loop, but its still fast enough
-        BrBc_m[n] = max_m*LcL**4
-        BrBc_surf = sheets[0] + sheets[1]*LcL**2 + sheets[2]*LcL**4  
-        BrBc_bkm[n] = amax(absolute(BrBc_surf)) 
-        BrBc_surf_w = sheets_w[0] + sheets_w[1]*LcL**2 + sheets_w[2]*LcL**4  
-        BrBc_bkm_w[n] = amax(absolute(BrBc_surf_w)) 
-    
+    BrBc_m = max_m*LcL_range**4
+
     _, characteristicB, characteristicLength = showSLSparameters()
     print(r"B_r / B_c = %.3f, max B_dipole(b1) = %.2f T" % (BrBc_bkm[0], BrBc_bkm[0]*characteristicB))
 
@@ -198,6 +202,19 @@ def poleTipVals(ax, gr : Grapher, LcL_range=arange(0,1.81,0.01), weighted=False)
     lOPA = ceil(1000*characteristicLength/LcL_ref )/1000
     print('L_opa = %.3f m' % lOPA)
     return LcL_ref, lOPA
+
+
+def poleTipSurf(ax, fc : FourierCell, LcL_range=arange(0,1.81,0.01), b1range=-arange(0,2.0,0.1)):
+    BrBc = empty((b1range.size, LcL_range.size))
+    for n, b1 in enumerate(b1range):
+        fc.setB(array([b1]))
+        fc.sextuVals()
+        sheets_w = poleSheets(fc.gr, weighted=True)
+        BrBc[n] = pole_tip_proc(sheets_w, LcL_range)
+    ax.plot(LcL_range, BrBc.T, linewidth=0.5)
+    ax.set(xlabel=r'$L_c$  / $L$', ylabel=r'max $|B_r|$  / $B_c$', 
+           xlim=(0,LcL_range[-1]), ylim=(0,25), yticks=arange(0,26,5)) 
+    [ax.spines[dr].set_color(None) for dr in ('top', 'right')]
 
 
 def poleTipContribs(ax, gr : Grapher, LcL, characteristicB, lOPA):
@@ -404,9 +421,14 @@ if __name__ == '__main__':
             saveFig(fig, "extendedExample.pdf")
 
             fig, ax = subplots(figsize=(columnWidth,0.7*columnWidth))
-            LcL_ref, lOPA = poleTipVals(ax, fc.gr, weighted=True)
+            LcL_ref, lOPA = poleTipVals(ax, fc.gr)
             fig.subplots_adjust(top=.98,bottom=.16,left=.16,right=.98)
             saveFig(fig, "poleTip.pdf") 
+
+            fig, ax = subplots(figsize=(columnWidth,0.7*columnWidth))
+            poleTipSurf(ax, fc)
+            fig.subplots_adjust(top=.98,bottom=.16,left=.16,right=.98)
+            saveFig(fig, "poleTipSurf.pdf")
 
             opaExport("example.opa", fc.gr, lOPA, 1.0/iinvRho)
 
