@@ -192,7 +192,7 @@ def poleTipVals(ax, gr : Grapher, LcL_range=arange(0,1.81,0.01)):
     print(r"max B = %.1f T,  max b = %.4f, max |b1| = %.4f" % (maxField, bMax, (bMax-1)/2))
     ax.axhline(bMax, linewidth=0.5, color='black', linestyle='dotted')
 
-    LcL_ref = 0.855
+    LcL_ref = 0.97
 
     ax.plot(LcL_range, BrBc_bkm_w, color='red')
     ax.plot(LcL_range, BrBc_bkm, color='0.6')
