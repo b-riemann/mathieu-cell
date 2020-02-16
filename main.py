@@ -110,7 +110,7 @@ def b1scan(axA, axB, nuX=0.45, nuY=0.35, minim=False, b1range=-arange(0,2.5,0.02
 
 
 
-def opaExport(filename, gr : Grapher, cellLength, curvature, energyGeV=2.4):
+def opaExport(filename, gr : Grapher, cellLength, curvature, energyGeV=2.4, sextuTest=False):
     s = gr.sL * cellLength
     scaler = cellLength / pi
 
@@ -124,7 +124,10 @@ def opaExport(filename, gr : Grapher, cellLength, curvature, energyGeV=2.4):
         f.write('energy = %.6f;\n{--- table of elements ---}\n' % energyGeV)
         for n, (t, k, mL) in enumerate(zip(bendAngles, kArr, intSextuStrength)):  # fixit later
             f.write('thick%i : combined, l=%.6f, t=%.6f, k=%.6f, ax=10.00, ay=10.00;\n' % (n, elemLength, t, k))
-            f.write('sextu%i : sextupole, k=%.6f, ax=10.00, ay=10.00;\n' % (n, mL))
+            if sextuTest:
+                f.write('sextu%i : sextupole, l=%.6f, k=%.6f, ax=10.00, ay=10.00;\n' % (n, elemLength, mL/elemLength))
+            else:
+                f.write('sextu%i : sextupole, k=%.6f, ax=10.00, ay=10.00;\n' % (n, mL))
             lineElems.extend(['thick%i' % n, 'sextu%i' % n])
 
         f.write('cell : %s;\n' % ','.join(lineElems))
@@ -425,11 +428,6 @@ if __name__ == '__main__':
             fig.subplots_adjust(top=.98,bottom=.16,left=.16,right=.98)
             saveFig(fig, "poleTip.pdf") 
 
-            fig, ax = subplots(figsize=(columnWidth,0.7*columnWidth))
-            poleTipSurf(ax, fc)
-            fig.subplots_adjust(top=.98,bottom=.16,left=.16,right=.98)
-            saveFig(fig, "poleTipSurf.pdf")
-
             opaExport("example.opa", fc.gr, lOPA, 1.0/iinvRho)
 
             fig, ax = subplots(figsize=(columnWidth,0.9*columnWidth))
@@ -437,6 +435,11 @@ if __name__ == '__main__':
             fig.subplots_adjust(top=.98,bottom=.16,left=.18,right=.98)
             saveFig(fig, "poleTipContribs.pdf")
 
+            fig, ax = subplots(figsize=(columnWidth,0.7*columnWidth))
+            poleTipSurf(ax, fc)
+            fig.subplots_adjust(top=.98,bottom=.16,left=.16,right=.98)
+            saveFig(fig, "poleTipSurf.pdf")
+            # do not use fc afterwards for the specific example, as poleTipSurf overwrites the b1 values.
 
         elif filename == "H.pdf":
             print("some figures of merit for H-optimized cells (excluding sextupole strengths)")
