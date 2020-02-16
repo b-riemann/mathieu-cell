@@ -117,7 +117,7 @@ def opaExport(filename, gr : Grapher, cellLength, curvature, energyGeV=2.4, sext
     elemLength = mean(diff(s))
     bendAngles = rad2deg(gr.b * elemLength) * curvature
     kArr = gr.k / scaler**2
-    intSextuStrength = gr.mSext * (elemLength / 2) / curvature / scaler**4
+    intSextuStrength = gr.mSext * (elemLength) / curvature / scaler**4
     lineElems = list()
 
     with open(filename, 'w', encoding='cp1252') as f:
@@ -408,7 +408,7 @@ if __name__ == '__main__':
             fih.subplots_adjust(top=0.96, bottom=0.19, left=0.07, right=0.96)
             saveFig(fih, "b1scan%c-mG.pdf" % chara)
             
-        elif filename in ("extendedExample.pdf", "poleTip.pdf", "example.opa"):
+        elif filename in ("extendedExample.pdf", "poleTip.pdf", "poleTipContribs.pdf", "example.opa"):
             fc = FourierCell(mSize=3)
             b1 = -1.11
             

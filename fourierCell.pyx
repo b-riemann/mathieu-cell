@@ -89,7 +89,7 @@ class Grapher:
     def _matrixB(self):
         self._B[0] = -self.betaX * self.eta
         self._B[1] =  self.betaY * self.eta
-        self._B /= 4*self.sL.size
+        self._B /= 2*self.sL.size
         return self._B
 
 
