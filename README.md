@@ -2,9 +2,9 @@
 
 * author: Bernard Riemann, [ORCID iD: 0000-0002-5102-9546](https://orcid.org/0000-0002-5102-9546)
 
-* used in the publication
+* used in
 
-> B. Riemann, "An elementary low emittance lattice study using Mathieu unit cells", manuscript submitted to Phys. Rev. Accel. Beams (2020)
+> B. Riemann, "An elementary low emittance lattice study using Mathieu unit cells", manuscript submitted to arXiv (2020)
 
 If you publish material using this software, please cite the above reference.
 
@@ -18,9 +18,11 @@ If you publish material using this software, please cite the above reference.
 
 * Matplotlib 2.1 (tested on 2.1.0)
 
+It is recommended to use a modern linux distribution, although a setup in Windows should be possible in principle.
+
 ## Usage
 
-You can run
+You can run the shell script `make_figures.sh`. If it is made executable, just type
 
     ./make_figures.sh
     
@@ -29,6 +31,7 @@ which will generate all required figures. Afterwards, you can call
     python main.py figurename.pdf
    
 to update a given figure.
+
 
 ## Known issues
 
@@ -43,7 +46,7 @@ to update a given figure.
 
 * `main.py` is a python script that generates PDFs (figures) on demand
 
-* the `fourierCell` Cython module (`fourierCell.pyx`) holds the core functionality that is not plotting-related.
+* the `fourierCell` Cython sub-module (`fourierCell.pyx`) holds the core functionality that is not plotting-related.
  
-* The `microMacroCell` Cython module (`microMacroCell.pyx`) stems from my earlier iteration on these scripts. It is still used in a few places, but mainly to compute initial k values for `TuneMap`.
+* The `microMacroCell` Cython sub-module (`microMacroCell.pyx`) stems from my earlier iteration on these scripts. It is still used in a few places, but mainly to compute initial k values for `TuneMap`.
 
