@@ -400,6 +400,7 @@ if __name__ == '__main__':
                 b1scan(ag, ah, *exampleA) #, b1range=-arange(0.9,1.3,0.01))
                 [a.axvline(1.11, color='black', linewidth=0.5, linestyle='dotted') for a in (ag, ah)]
                 # ag.set(xlim=(0.9,1.3),ylim=(-1,15))
+                ag.set(ylim=(-1,5))
             else:
                 chara = 'B'
                 b1scan(ag, ah, *exampleB)
