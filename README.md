@@ -34,19 +34,19 @@ If you change something and want to update a figure, you can try to call
 
     python main.py figurename.pdf
    
-This works in some cases, but not all, as some calls to main.py produce multiple PDFs at once. When in doubt, just run `make_figures.py` on everything.
+This works in some cases, but not all, as some calls to `main.py` produce multiple PDFs at once. When in doubt, just run `make_figures.sh` on everything.
 
 
 ## Known issues
 
-* the `example.opa` file cannot be read directly into OPA sometimes: this is an encoding problem. Using dos encoding should fix this in principle -- however, the easiest way is duplicating an existing opa file and copy-pasting the contents.
+* the `example.opa` file cannot be read directly into OPA sometimes: this is an encoding problem. Using dos encoding should fix this in principle -- however, the easiest way is duplicating an existing opa file and copy-pasting the example content into that file.
 
 * in the `FourierCell` sub-module, the sign of the `b1` variable is defined opposite to the case in the paper. This is corrected in all PDFs that are generated.
 
 * likewise in the `FourierCell` sub-module, the sign of the `k1` variable is defined opposite to the case in the paper. This is corrected in all PDFs that are generated.
 
 
-### internal structure
+## Internal structure
 
 * `main.py` is a python script that generates PDFs (figures) on demand
 
