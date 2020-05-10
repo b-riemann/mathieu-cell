@@ -1,5 +1,5 @@
 from distutils.core import setup
 from Cython.Build import cythonize
 
-setup(name='Hello world app',
+setup(name='fourierCell',
     ext_modules=cythonize("fourierCell.pyx", annotate=True))

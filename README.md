@@ -4,7 +4,7 @@
 
 * used in
 
-> B. Riemann, "An elementary low emittance lattice study using Mathieu unit cells", manuscript submitted to arXiv (2020)
+> B. Riemann, "The Mathieu unit cell as a template for low emittance lattices", manuscript submitted to arXiv (2020)
 
 If you publish material using this software, please cite the above reference.
 
@@ -26,7 +26,9 @@ You can run the shell script `make_figures.sh`. If it is made executable, just t
 
     ./make_figures.sh
     
-which will generate all required figures. When called the first time, this might take a while due to the necessary computations. These computations are however saved, so reruns will be much faster. 
+which will generate all required figures as PDFs.
+
+When called the first time, this might take a while due to the required computations. These computations are however stored, thus reruns will be much faster. 
 
 If you change something and want to update a figure, you can try to call 
 
