@@ -1,10 +1,10 @@
 # Elementary computations for studying Mathieu unit cells.
 
-* author: Bernard Riemann, [ORCID iD: 0000-0002-5102-9546](https://orcid.org/0000-0002-5102-9546)
+author: Bernard Riemann, [ORCID iD: 0000-0002-5102-9546](https://orcid.org/0000-0002-5102-9546)
 
-* used in
+used in:
 
-> B. Riemann, "The Mathieu unit cell as a template for low emittance lattices", manuscript submitted to arXiv (2020)
+B. Riemann, "The Mathieu unit cell as a template for low emittance lattices", [arXiv:2005.04087](https://arxiv.org/abs/2005.04087) (2020)
 
 If you publish material using this software, please cite the above reference.
 
