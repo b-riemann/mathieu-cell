@@ -84,7 +84,7 @@ def opticsPlot(axBeta, s, betaX, betaY, etaX, betaXcolor='xkcd:royal blue', beta
     axBeta.plot(s, betaY, color=betaYcolor, label='y', linewidth=1)
     multicolor_ylabel(axBeta, (r'$%s\beta_x$' % prefix, r'$%s\beta_y$' % prefix), (betaXcolor, betaYcolor))
     axEta.plot(s, etaX, color=etaColor, linewidth=1)
-    axEta.set(ylim=(0, etaLim), yticks=arange(0, etaLim + 1))
+    axEta.set(ylim=(0, etaLim), yticks=arange(0, etaLim + 0.1))
     axEta.set_ylabel(r'$%s\eta_x$' % prefix, color=etaColor)
 
     axBeta.spines['top'].set_color(None)

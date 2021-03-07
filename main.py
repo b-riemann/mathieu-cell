@@ -17,6 +17,7 @@ def generateMapIfNotExisting():
     tm = TuneMap()
     if os.path.isfile('F.pkl'):
         tm.load()
+        print("(reloading k values for tune map)")
     else:
         print("computing k values for tune map. this only needs to be done once.")
         tic = time()
@@ -48,7 +49,7 @@ def plotJx(ax, tm : TuneMap, jX, grayMax=3.0):
 def plotMultipoles(ax, gr : Grapher, sVar='s', sextupoles=False):
     plot_multp(ax, 2*gr.sL, gr.b, gr.k, gr.mSext if sextupoles else None, sVar=sVar)
     ax.axhline(0, color='black', linestyle='dashed', linewidth=0.5)
-    ax.set(xlim=(0,1), xlabel=r'%c / $2\pi$' % sVar)
+    ax.set(xlim=(0,1), xlabel=r'2 %c / $\pi$' % sVar)
 
 
 def obig(b2, b1, fc : FourierCell):
@@ -328,7 +329,7 @@ if __name__ == '__main__':
 
             showSLSparameters( fc.maxM() )
 
-            if filename[0]=='e':
+            if filename[0]=='e': # example.pdf
                 fig, ax = subplots(figsize=(0.5*columnWidth,0.68*columnWidth))
                 sVar = 's'
                 plotMultipoles(ax, fc.gr, sVar=sVar)
@@ -337,18 +338,18 @@ if __name__ == '__main__':
                 ax.plot(2*fc.gr.sL, fc.gr.betaY, label=betaLabel % 'y', color='0.4')
                 ax.plot(2*fc.gr.sL, fc.gr.eta, label=r'$\eta(s)$', color='red')
 
-            else:
+            else: # Example.pdf
                 fig, (ax, axB) = subplots(2,1,figsize=(columnWidth, columnWidth), sharex=True)
                 sVar = 'u'
                 plotMultipoles(axB, fc.gr, sVar=sVar, sextupoles=True)
                 opticsPlot(ax, 2*fc.gr.sL, fc.gr.betaX, fc.gr.betaY, fc.gr.eta, prefix=r'\tilde') 
 
-            if filename[0]=='e':
+            if filename[0]=='e': # example.pdf
                 fig.subplots_adjust(top=0.999, bottom=0.19, left=0.164, right=0.941)
                 ax.set(ylim=(-2,17))
                 ax.legend(prop={'size': 8})
                 [ax.spines[dr].set_color(None) for dr in ('top', 'right')]
-            else:
+            else: # Example.pdf
                 fig.subplots_adjust(top=0.99, bottom=0.13, left=0.15, right=0.87)
                 ax.set(ylim=(0,17))
 

@@ -4,33 +4,25 @@ author: Bernard Riemann, [ORCID iD: 0000-0002-5102-9546](https://orcid.org/0000-
 
 used in:
 
-B. Riemann, "The Mathieu unit cell as a template for low emittance lattices", [arXiv:2005.04087](https://arxiv.org/abs/2005.04087) (2020)
+B. Riemann, "The Mathieu unit cell as a template for low emittance lattices", [arXiv:2005.04087](https://arxiv.org/abs/2005.04087), accepted for publication in Phys. Rev. Accel. Beams (2020)
 
 If you publish material using this software, please cite the above reference.
 
 ## Requirements
 
-* Python (tested on 3.6.3)
-
-* Cython (tested on 0.26.1)
-
-* Scipy (tested on 0.19.1)
-
-* Matplotlib (tested on 2.1.0)
-
-It is recommended to use a modern Linux distribution, although a setup in Windows should be possible in principle.
+The computations require Python, Cython, and Scipy (see [requirements.txt](requirements.txt)). It is recommended to use a modern Linux distribution, although a setup in Windows should be possible in principle.
 
 ## Usage
 
-You can run the shell script `make_figures.sh`. If it is made executable, just type
+You can run the shell script `make_figures.sh`. Just enter
 
-    ./make_figures.sh
+    sh make_figures.sh
     
-which will generate all required figures as PDFs.
+into the terminal, which will generate all required figures as PDFs.
 
 When called the first time, this might take a while due to the required computations. These computations are however stored, thus reruns will be much faster. 
 
-If you change something and want to update a figure, you can try to call 
+If you change something and want to update a figure, you can try
 
     python main.py figurename.pdf
    
